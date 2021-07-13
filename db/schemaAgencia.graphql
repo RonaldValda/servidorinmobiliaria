@@ -1,0 +1,23 @@
+extend type Query {
+        obtenerAgencias: [Agencia]
+}
+
+input AgenciaInput {
+    nombre_agencia: String!
+    nombre_propietario: String!
+    telefono: String
+    web: String
+}
+
+type Agencia {
+    id: ID
+    nombre_agencia: String
+    nombre_propietario: String
+    telefono: String
+    web: String
+}
+extend type Mutation {
+    registrarAgencia(input: AgenciaInput) : String
+    actualizarAgencia(id : ID!, input: AgenciaInput) : String
+    eliminarAgencia(id: ID!) : String
+}
