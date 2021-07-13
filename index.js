@@ -31,7 +31,9 @@ const server=new ApolloServer({
 
             }
         }
-    }
+    },
+    playground: true,
+    introspection: true,
 });
 /*server.listen().then(({url})=>{
     console.log(`Servidor listo en la URL ${url}`);
