@@ -3,7 +3,7 @@ require('dotenv').config({ path: 'variables.env' });
 const DB_MONGO=process.env.DB_MONGO;
 const conectarDB=async()=>{
     try{
-        await mongoose.connect(DB_MONGO,{
+        await mongoose.connect("mongodb+srv://FranzReynaldo98:abcdef1209@cluster0.rrrof.mongodb.net/inmobiliariaBD",{
             useNewUrlParser:true,
             useUnifiedTopology:true,
             useFindAndModify: false,
