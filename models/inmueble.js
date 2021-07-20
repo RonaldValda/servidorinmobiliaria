@@ -62,6 +62,12 @@ const InmuebleSchema = new mongoose.Schema({
     url_imagenes:{
         type: Array
     },
+    historial_precios:{
+        type: Array
+    },
+    coordenadas:{
+        type: Array
+    },
     //caracteristicas internas
     numero_dormitorios:{
         type: Number,
@@ -141,6 +147,9 @@ const InmuebleSchema = new mongoose.Schema({
     },
     //otros
     verificados:{
+        type: Boolean
+    },
+    contactados:{
         type: Boolean
     },
     bienes_adjudicados:{

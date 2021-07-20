@@ -1,8 +1,9 @@
 extend type Query {
     obtenerInmuebles(input1: FiltroInmuebleInput): [Inmueble]
+    obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
 }
-
+scalar Date
 type Inmueble{
     id: ID
     nombre_propietario: String
@@ -24,6 +25,8 @@ type Inmueble{
     numero_pisos: Int
     sin_hipoteca: Boolean
     url_imagenes: [String]
+    historial_precios: [Int]
+    coordenadas: [Float]
     numero_dormitorios: Int
     numero_banios: Int
     numero_garaje: Int
@@ -50,12 +53,14 @@ type Inmueble{
     estudiantil: Boolean
     comercial: Boolean
     verificados: Boolean
+    contactados: Boolean
     bienes_adjudicados: Boolean
     remates_judiciales: Boolean
     imagenes_2D_link: String
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
+    creado: Date
     agencia:Agencia
     usuarios_favorito: [UsuarioFavorito]
 }
@@ -80,6 +85,7 @@ input InmuebleInput{
     numero_pisos: Int
     sin_hipoteca: Boolean
     url_imagenes: [String]
+    coordenadas: [Float]
     numero_dormitorios: Int
     numero_banios: Int
     numero_garaje: Int
@@ -106,6 +112,7 @@ input InmuebleInput{
     estudiantil: Boolean
     comercial: Boolean
     verificados: Boolean
+    contactados: Boolean
     bienes_adjudicados: Boolean
     remates_judiciales: Boolean
     imagenes_2D_link: String
@@ -180,6 +187,13 @@ input FiltroInmuebleInput{
     video_2D: Boolean
     tour_virtual: Boolean
     video_tour: Boolean
+    id_usuario: String
+}
+input FiltroSimpleInmuebleInput{
+    tipo_inmueble: String
+    tipo_contrato: String
+    precio_min: Int
+    precio_max: Int
     id_usuario: String
 }
 extend type Mutation {

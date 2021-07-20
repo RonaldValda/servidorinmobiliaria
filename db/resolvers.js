@@ -161,6 +161,35 @@ const resolvers={
             }
             return inmuebles;
         },
+        obtenerInmueblesSimpleFiltro: async (_,{input1})=>{
+            var filter1={};
+            if(input1.tipo_inmueble!="Todos") filter1.tipo_inmueble={$in:input1.tipo_inmueble};
+            if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
+            //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
+            if(input1.precio_min<input1.precio_max) {
+                filter1.precio={$gte:input1.precio_min,$lte:input1.precio_max}
+            }else{
+                filter1.precio={$gte:input1.precio_min};
+            };
+            //console.log("filtro....",filter1);
+
+            const inmuebles=Inmueble.find(filter1).sort({precio:1});
+            let filter2={};
+            console.log("id_usuario",input1.id_usuario);
+            filter2.usuario={$in:""};
+            if(input1.id_usuario!=""){
+                await inmuebles.find({}).populate("agencia",{})
+                .populate({
+                    path:"usuarios_favorito",match:{"usuario":input1.id_usuario},
+                    populate:{path:"usuario"}});
+            }else{
+                await inmuebles.find({}).populate("agencia",{})
+                .populate({
+                    path:"usuarios_favorito",match:{filter2},
+                    populate:{path:"usuario"}});
+            }
+            return inmuebles;
+        },
         obtenerUsuarioFavorito: async(_,{id})=>{
             const inmuebleFavorito=await InmuebleFavorito.find({usuario:id})
             .populate({
@@ -418,8 +447,10 @@ const resolvers={
             }
         },
         registrarInmuebleMasivo: async (_,{id})=>{
-            var min=500;
+            var min=800;
             var max=1000;
+            var longitud=-65.22562;
+            var latitud=-18.98654;
             let url_imagenes=[
                 "https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2F06d827045d76150a09f4a023dd76d16b.jpg?alt=media&token=7183086f-6817-455e-b8d6-2d84b68fd78c",
                 "https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2F134357408.jpg?alt=media&token=3d0397b8-c067-46de-a853-d40de1760fd4",
@@ -494,13 +525,13 @@ const resolvers={
                 inmueble.precio=numero_aleatorio*1000;
                 numero_aleatorio=Math.floor(Math.random() * (tipo_inmueble.length  - 0)) + 0;
                 inmueble.tipo_inmueble=tipo_inmueble[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 10;
+                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
                 inmueble.superficie_terreno=inmueble.tipo_inmueble=="Departamento"?numero_aleatorio*10:numero_aleatorio*10;
-                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 10;
+                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
                 inmueble.superficie_construccion=inmueble.tipo_inmueble=="Departamento"?numero_aleatorio*10:0;
                 if(inmueble.tipo_inmueble=="Casa"){
                     var num_aux=numero_aleatorio;
-                    numero_aleatorio=Math.floor(Math.random() * (num_aux - 0)) + 10;
+                    numero_aleatorio=Math.floor(Math.random() * (num_aux - 0)) + 1;
                     inmueble.superficie_construccion=numero_aleatorio*10;
                 }
                 numero_aleatorio=Math.floor(Math.random() * (tipo_contrato.length  - 0)) + 0;
@@ -508,6 +539,19 @@ const resolvers={
                 //----------------cambiar precio para alquiler--------------------------
                 numero_aleatorio=Math.floor(Math.random() * (50  - 0)) + 10;
                 inmueble.precio=inmueble.tipo_contrato=="Alquiler"?numero_aleatorio*100:inmueble.precio;
+                inmueble.historial_precios.push(inmueble.precio);
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                if(valores_booleanos[numero_aleatorio]){
+                    numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                    if(valores_booleanos[numero_aleatorio]){
+                        numero_aleatorio=Math.floor(Math.random() * (500  - 0)) + 10;
+                        inmueble.historial_precios.push(inmueble.precio+numero_aleatorio);
+                    }else{
+                        numero_aleatorio=Math.floor(Math.random() * (500  - 0)) + 10;
+                        inmueble.historial_precios.push(inmueble.precio-numero_aleatorio);
+                    }
+                }
+                
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.documentos_dia=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
@@ -532,6 +576,10 @@ const resolvers={
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
+                numero_aleatorio=Math.floor(Math.random() * (11  - 0)) + 1;
+                inmueble.coordenadas.push(Math.round((latitud-1/numero_aleatorio)*10000)/10000);
+                numero_aleatorio=Math.floor(Math.random() * (80  - 0)) + 1;
+                inmueble.coordenadas.push(Math.round((longitud-1/numero_aleatorio)*10000)/10000);
                 inmueble.agencia=id;
                 inmueble.url_imagenes=imagenes;
                 
@@ -591,6 +639,8 @@ const resolvers={
 
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.verificados=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.contactados=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.bienes_adjudicados=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
