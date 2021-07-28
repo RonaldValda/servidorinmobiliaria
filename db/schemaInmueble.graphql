@@ -12,6 +12,7 @@ type Inmueble{
     direccion: String
     precio: Int
     tipo_inmueble: String
+    estado_inmueble:String
     superficie_terreno: Int
     superficie_construccion: Int
     tipo_contrato: String
@@ -72,6 +73,7 @@ input InmuebleInput{
     direccion: String
     precio: Int
     tipo_inmueble: String
+    estado_inmueble: String
     superficie_terreno: Int
     superficie_construccion: Int
     tipo_contrato: String

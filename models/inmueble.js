@@ -23,6 +23,9 @@ const InmuebleSchema = new mongoose.Schema({
     tipo_inmueble: {
         type: String,
     },
+    estado_inmueble:{
+        type:String,
+    },
     superficie_terreno: {
         type: Number
     },

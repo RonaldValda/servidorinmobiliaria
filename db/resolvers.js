@@ -253,19 +253,34 @@ const resolvers={
         autenticarUsuario: async (_,{input}) => {
             const { email, password} = input;
             //si el usuario existe
-            const existeUsuario = await Usuario.findOne({ email });
-            //console.log(existeUsuario);
-            if(!existeUsuario){
-                throw new Error('El usuario no existe');
-            }
-            // si el password es correcto
-            const passwordCorrecto=await bcryptjs.compare(password,existeUsuario.password);
             
-            //console.log(passwordCorrecto)
-            if(!passwordCorrecto){
-                throw new Error('Password Incorrecto');
+            const existeUsuario = await Usuario.findOne({ email });
+            let usuario;
+            //console.log(existeUsuario);
+            if(input.medio_registro=="Creada"){
+                if(!existeUsuario){
+                    throw new Error('El usuario no existe');
+                }
+                // si el password es correcto
+                
+                const passwordCorrecto=await bcryptjs.compare(password,existeUsuario.password);
+                
+                //console.log(passwordCorrecto)
+                if(!passwordCorrecto){
+                    throw new Error('Password Incorrecto');
+                }
+                usuario=Usuario.findOne({email:input.email});
+            }else{
+                
+                if(!existeUsuario){
+                    console.log("aquiiii");
+                    const nuevoUsuario = new Usuario(input);
+                    await nuevoUsuario.save();
+                    usuario=nuevoUsuario;
+                }else{
+                    usuario=Usuario.findOne({email:input.email});
+                }
             }
-            let usuario=Usuario.findOne({email:input.email});
             //dar acceso a la app
             return usuario;
             /*return {
@@ -499,6 +514,7 @@ const resolvers={
                         "Loredo","Peredo","Abastoflor","Paco","Rodriguez","Dominguez",
                         "Fuentes","Gallardo","Guzman","Suarez","Vega","Bejarano","Palacios",
                         "Garcilazo","Bohorquez","Branco","Arancibia","Puma","Nogales"];
+            let estado_inmueble=["Sin Negociar","Sin Negociar","Sin Negociar","Negociaciones","Vendido"];
             let ciudad="Sucre";
             let zona=["Zona 1","Zona 2","Zona 3","Zona 4","Zona 5","Zona 6","Zona 7","Zona 8","Zona ","Zona 10"];
             let tipo_inmueble=["Casa","Departamento","Terreno"];
@@ -525,6 +541,8 @@ const resolvers={
                 inmueble.precio=numero_aleatorio*1000;
                 numero_aleatorio=Math.floor(Math.random() * (tipo_inmueble.length  - 0)) + 0;
                 inmueble.tipo_inmueble=tipo_inmueble[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (estado_inmueble.length  - 0)) + 0;
+                inmueble.estado_inmueble=estado_inmueble[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
                 inmueble.superficie_terreno=inmueble.tipo_inmueble=="Departamento"?numero_aleatorio*10:numero_aleatorio*10;
                 numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;

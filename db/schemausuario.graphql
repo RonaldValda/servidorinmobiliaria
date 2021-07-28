@@ -31,8 +31,11 @@
     }
 
     input AutenticarInput {
+        nombre: String!
+        nombre_usuario: String!
         email: String!
         password: String!
+        medio_registro: String!
     }
     type UsuarioFavorito{
         id: ID
