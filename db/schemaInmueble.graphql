@@ -54,7 +54,6 @@ type Inmueble{
     estudiantil: Boolean
     comercial: Boolean
     verificados: Boolean
-    contactados: Boolean
     bienes_adjudicados: Boolean
     remates_judiciales: Boolean
     imagenes_2D_link: String
@@ -114,7 +113,6 @@ input InmuebleInput{
     estudiantil: Boolean
     comercial: Boolean
     verificados: Boolean
-    contactados: Boolean
     bienes_adjudicados: Boolean
     remates_judiciales: Boolean
     imagenes_2D_link: String
@@ -129,12 +127,14 @@ type InmuebleFavorito{
     favorito: Boolean
     visto: Boolean
     doble_visto: Boolean
+    contactado: Boolean
     Inmueble: String
 }
 input InmuebleFavoritoInput{
     favorito: Boolean
     visto: Boolean
     doble_visto: Boolean
+    contactado: Boolean
 }
 
 

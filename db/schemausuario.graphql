@@ -42,6 +42,7 @@
         visto: Boolean
         doble_visto: Boolean
         favorito: Boolean
+        contactado: Boolean
         usuario: Usuario
         inmueble: Inmueble
     }
@@ -49,6 +50,7 @@
         visto: Boolean
         doble_visto: Boolean
         favorito: Boolean
+        contactado: Boolean
     }
 
     extend type Mutation {

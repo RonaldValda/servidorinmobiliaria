@@ -10,6 +10,9 @@ const InmuebleFavoritoSchema = new mongoose.Schema({
     doble_visto:{
         type: Boolean
     },
+    contactado:{
+        type: Boolean
+    },
     id_usuario: {
         type: String,
     },

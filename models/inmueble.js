@@ -152,9 +152,6 @@ const InmuebleSchema = new mongoose.Schema({
     verificados:{
         type: Boolean
     },
-    contactados:{
-        type: Boolean
-    },
     bienes_adjudicados:{
         type: Boolean
     },
