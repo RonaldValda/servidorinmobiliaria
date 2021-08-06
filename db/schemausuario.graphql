@@ -16,6 +16,8 @@
         nombre_usuario: String
         email: String
         medio_registro: String
+        fecha_ultimo_ingreso: String
+        usuario_inmueble_base: UsuarioInmuebleBase
     }
 
     type Token {
@@ -28,6 +30,7 @@
         email: String!
         password: String!
         medio_registro: String
+        fecha_ultimo_ingreso: String
     }
 
     input AutenticarInput {
@@ -36,6 +39,7 @@
         email: String!
         password: String!
         medio_registro: String!
+        fecha_ultimo_ingreso: Date
     }
     type UsuarioFavorito{
         id: ID
@@ -52,10 +56,11 @@
         favorito: Boolean
         contactado: Boolean
     }
+    
 
     extend type Mutation {
         crearUsuario(input: UsuarioInput) : String
         autenticarUsuario(input: AutenticarInput) : Usuario
         #registrarInmuebleFavorito(id_inmueble:ID, id_usuario:ID, input: UsuarioFavoritoInput) : String
-
+        #registrarInmuebleBase(input: UsuarioInmuebleBaseInput): String
     }

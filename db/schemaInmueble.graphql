@@ -1,9 +1,11 @@
 extend type Query {
     obtenerInmuebles(input1: FiltroInmuebleInput): [Inmueble]
-    obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput): [Inmueble]
+    obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :[Inmueble]
+    obtenerInmueblesNuevos(input: ObtenerInmuebleNuevoInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
 }
 scalar Date
+
 type Inmueble{
     id: ID
     nombre_propietario: String
@@ -61,10 +63,20 @@ type Inmueble{
     tour_virtual_360_link: String
     video_tour_360_link: String
     creado: Date
+    ultima_modificacion: Date
     agencia:Agencia
     usuarios_favorito: [UsuarioFavorito]
 }
-
+input ObtenerInmuebleNuevoInput{
+    fecha: Date
+    id_usuario: String
+    dormitorios: Int
+    banios: Int
+    garaje: Int
+    superficie_terreno: Int
+    superficie_construccion: Int
+    tiempo_construccion: Int
+}
 input InmuebleInput{
     nombre_propietario: String
     ciudad: String
@@ -136,6 +148,24 @@ input InmuebleFavoritoInput{
     doble_visto: Boolean
     contactado: Boolean
 }
+type UsuarioInmuebleBase{
+    id: ID
+    dormitorios: Int
+    banios: Int
+    garaje: Int
+    superficie_terreno: Int
+    superficie_construccion: Int
+    tiempo_construccion: Int
+    fecha_inicio: Date
+}
+input UsuarioInmuebleBaseInput{
+    dormitorios: Int
+    banios: Int
+    garaje: Int
+    superficie_terreno: Int
+    superficie_construccion: Int
+    tiempo_construccion: Int
+}
 
 
 input FiltroInmuebleInput{
@@ -192,10 +222,8 @@ input FiltroInmuebleInput{
     id_usuario: String
 }
 input FiltroSimpleInmuebleInput{
-    tipo_inmueble: String
     tipo_contrato: String
-    precio_min: Int
-    precio_max: Int
+    ciudad: String
     id_usuario: String
 }
 extend type Mutation {
@@ -203,5 +231,9 @@ extend type Mutation {
     actualizarInmueble(id: ID!, input: InmuebleInput) : String
     eliminarInmueble(id: ID!) : String
     registrarInmuebleMasivo(id: ID!): String
-    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input: InmuebleFavoritoInput): String
+    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput, input2: UsuarioInmuebleBaseInput): String
+    actualizarFechaInmuebleBase(id: ID,fecha: String):String
+}
+type Subscription {
+    inmuebleAdded: Inmueble
 }

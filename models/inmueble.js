@@ -181,7 +181,10 @@ const InmuebleSchema = new mongoose.Schema({
     creado: {
         type: Date,
         default: Date.now()
-    }
-        
+    },
+    ultima_modificacion:{
+        type: Date,
+        default: Date.now()
+    } 
 });
 module.exports = mongoose.model('Inmueble', InmuebleSchema);

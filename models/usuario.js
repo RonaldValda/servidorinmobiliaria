@@ -27,6 +27,13 @@ const UsuarioSchema = mongoose.Schema({
     registro: {
         type: Date,
         default: Date.now()
-    }
+    },
+    fecha_ultimo_ingreso: {
+        type: Date,
+    },
+    usuario_inmueble_base: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'UsuarioInmuebleBase'
+    },
 });
 module.exports = mongoose.model('Usuario',UsuarioSchema);
