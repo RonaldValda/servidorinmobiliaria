@@ -1,9 +1,12 @@
     
     extend type Query {
         obtenerUsuarios: [Usuario]
-        
+        obtenerUsuarioEmail(email:String) : [Usuario] 
         obtenerUsuariosID(input: UsuarioIDInput) : [Usuario] 
         obtenerUsuarioFavorito(id:ID) : [UsuarioFavorito]
+        obtenerAdministradorInmueble(id:ID):[AdministradorInmueble]
+        obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
+        obtenerSolicitudesUsuarios(id:ID):[SolicitudesUsuarios]
     }
 
     input UsuarioIDInput {
@@ -18,6 +21,14 @@
         medio_registro: String
         fecha_ultimo_ingreso: String
         usuario_inmueble_base: UsuarioInmuebleBase
+        tipo_usuario: String
+        nombre_agencia: String
+        telefono: String
+        web: String
+        verificado: Boolean
+        estado_cuenta: Boolean
+        sumatoria_calificacion:Int
+        cantidad_inmuebles_calificados:Int
     }
 
     type Token {
@@ -31,6 +42,7 @@
         password: String!
         medio_registro: String
         fecha_ultimo_ingreso: String
+        estado_cuenta: Boolean
     }
 
     input AutenticarInput {
@@ -40,6 +52,12 @@
         password: String!
         medio_registro: String!
         fecha_ultimo_ingreso: Date
+        tipo_usuario: String
+        nombre_agencia: String
+        telefono: String
+        web: String
+        verificado: Boolean
+        estado_cuenta: Boolean
     }
     type UsuarioFavorito{
         id: ID
@@ -50,17 +68,77 @@
         usuario: Usuario
         inmueble: Inmueble
     }
+    type AdministradorInmueble{
+        id:ID
+        inmueble:Inmueble
+        usuario_solicitante:Usuario
+        usuario_respondedor:Usuario
+        fecha_solicitud:Date
+        fecha_respuesta:Date
+        tipo_solicitud:String
+        respuesta:String
+        observaciones:String
+        link_respaldo:String
+        solicitud_terminada:Boolean
+    }
+    type SolicitudesAdministradores{
+        id:ID
+        administrador_inmueble:AdministradorInmueble
+        fecha_solicitud:Date
+        fecha_respuesta:Date
+        respuesta_entregada:Boolean
+        tipo_solicitud:String
+        respuesta:String
+        observaciones:String
+        link_respaldo:String
+        solicitud_terminada:Boolean
+    }
+    type SolicitudesUsuarios{
+        id:ID
+        inmueble:Inmueble
+        usuario_solicitante:Usuario
+        usuario_respondedor:Usuario
+        fecha_solicitud:Date
+        fecha_respuesta:Date
+        respuesta_entregada:Boolean
+        tipo_solicitud:String
+        respuesta:String
+        observaciones:String
+        solicitud_terminada:Boolean
+    }
     input UsuarioFavoritoInput{
         visto: Boolean
         doble_visto: Boolean
         favorito: Boolean
         contactado: Boolean
     }
-    
-
+    input AdministradorInmuebleInput{
+        tipo_solicitud:String
+        respuesta:String
+        observaciones:String
+        link_respaldo:String
+        solicitud_terminada:Boolean
+    }
+    input SolicitudesAdministradoresInput{
+        tipo_solicitud:String
+        respuesta:String
+        observaciones:String
+        link_respaldo:String
+        solicitud_terminada:Boolean
+    }
+    type BitacoraInmueble{
+        fecha:Date
+        actividad:String
+        usuario:Usuario
+        inmueble:Inmueble
+    }
     extend type Mutation {
-        crearUsuario(input: UsuarioInput) : String
+        crearUsuario(input: AutenticarInput) : Usuario
         autenticarUsuario(input: AutenticarInput) : Usuario
         #registrarInmuebleFavorito(id_inmueble:ID, id_usuario:ID, input: UsuarioFavoritoInput) : String
         #registrarInmuebleBase(input: UsuarioInmuebleBaseInput): String
+        responderSolicitudAdministrador(id:ID,id_respondedor:ID,id_comprador:ID,id_solicitud:ID,input:SolicitudesAdministradoresInput):String
+        responderSolicitudUsuarioCalificacion(id_solicitud:ID,calificacion:Int):String
+        modificarEstadoInmuebleVendedor(id_inmueble:ID,tipo_accion:String):String
+        #registrarBitacoraInmueble(id_inmueble:ID,id_usuario:ID,actividad:String):String
     }

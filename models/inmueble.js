@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const InmuebleSchema = new mongoose.Schema({
+    indice:{
+        type: Number
+    },
     nombre_propietario: {
         type: String,
         trim: true
@@ -171,20 +174,32 @@ const InmuebleSchema = new mongoose.Schema({
         type: String
     },
     //llaves foraneas
-    agencia: {
+    creador: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Agencia'
+        ref: 'Usuario'
     },
     usuarios_favorito: [{ 
         type:mongoose.Schema.Types.ObjectId,ref:'InmuebleFavorito',default:{}}
     ],
-    creado: {
+    fecha_creacion: {
         type: Date,
         default: Date.now()
+    },
+    fecha_publicacion:{
+        type: Date,
+        default: Date.now()
+    },
+    autorizacion:{
+        type: String,
+        default: "Pendiente"
     },
     ultima_modificacion:{
         type: Date,
         default: Date.now()
+    },
+    calificacion:{
+        type: Number,
+        Default:0
     } 
 });
 module.exports = mongoose.model('Inmueble', InmuebleSchema);

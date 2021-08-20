@@ -2,12 +2,15 @@ extend type Query {
     obtenerInmuebles(input1: FiltroInmuebleInput): [Inmueble]
     obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :[Inmueble]
     obtenerInmueblesNuevos(input: ObtenerInmuebleNuevoInput): [Inmueble]
+    obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
+    obtenerMisInmueblesVenta(id: ID): [Inmueble]
 }
 scalar Date
 
 type Inmueble{
     id: ID
+    indice: Int
     nombre_propietario: String
     ciudad: String
     zona: String
@@ -62,9 +65,11 @@ type Inmueble{
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
-    creado: Date
+    fecha_creacion: Date
+    fecha_publicacion: Date
+    autorizacion: String
     ultima_modificacion: Date
-    agencia:Agencia
+    creador:Usuario
     usuarios_favorito: [UsuarioFavorito]
 }
 input ObtenerInmuebleNuevoInput{
@@ -85,6 +90,7 @@ input InmuebleInput{
     precio: Int
     tipo_inmueble: String
     estado_inmueble: String
+    autorizacion: String
     superficie_terreno: Int
     superficie_construccion: Int
     tipo_contrato: String
@@ -229,6 +235,7 @@ input FiltroSimpleInmuebleInput{
 extend type Mutation {
     registrarInmueble(id: ID!, input: InmuebleInput) : String
     actualizarInmueble(id: ID!, input: InmuebleInput) : String
+    actualizarPrecioInmueble(id: ID!, precio: Int) : String
     eliminarInmueble(id: ID!) : String
     registrarInmuebleMasivo(id: ID!): String
     registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput, input2: UsuarioInmuebleBaseInput): String
