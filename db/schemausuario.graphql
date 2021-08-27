@@ -78,7 +78,8 @@
         tipo_solicitud:String
         respuesta:String
         observaciones:String
-        link_respaldo:String
+        link_respaldo_solicitud:String
+        link_respaldo_respuesta:String
         solicitud_terminada:Boolean
     }
     type SolicitudesAdministradores{
@@ -90,7 +91,8 @@
         tipo_solicitud:String
         respuesta:String
         observaciones:String
-        link_respaldo:String
+        link_respaldo_solicitud:String
+        link_respaldo_respuesta:String
         solicitud_terminada:Boolean
     }
     type SolicitudesUsuarios{
@@ -116,14 +118,16 @@
         tipo_solicitud:String
         respuesta:String
         observaciones:String
-        link_respaldo:String
+        link_respaldo_solicitud:String
+        link_respaldo_respuesta:String
         solicitud_terminada:Boolean
     }
     input SolicitudesAdministradoresInput{
         tipo_solicitud:String
         respuesta:String
         observaciones:String
-        link_respaldo:String
+        link_respaldo_solicitud:String
+        link_respaldo_respuesta:String
         solicitud_terminada:Boolean
     }
     type BitacoraInmueble{

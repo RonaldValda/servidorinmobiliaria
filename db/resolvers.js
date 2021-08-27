@@ -2,6 +2,7 @@ const Usuario = require('../models/usuario');
 const Proyecto = require('../models/proyecto'); 
 const Tarea = require('../models/tarea');
 const Inmueble = require('../models/inmueble'); 
+const InmuebleImagenes = require('../models/inmuebleImagenes'); 
 const Agencia = require('../models/agencia');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -181,12 +182,13 @@ const resolvers={
             filter1.ultima_modificacion={$gte:input.fecha};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
             //console.log("filtro....",filter1);
-            filter1.numero_dormitorios={$gte:input.dormitorios-1,$lte:input.dormitorios+1};
-            filter1.numero_banios={$gte:input.banios-1,$lte:input.banios+1};
-            filter1.numero_garaje={$gte:input.garaje-1,$lte:input.garaje+1};
-            filter1.superficie_terreno={$gte:input.superficie_terreno-50,$lte:input.superficie_terreno+50};
-            filter1.superficie_construccion={$gte:input.superficie_construccion-50,$lte:input.superficie_construccion+50};
-            filter1.tiempo_construccion={$gte:input.tiempo_construccion-5,$lte:input.tiempo_construccion+5};
+            filter1.numero_dormitorios={$gte:input.dormitorios_min,$lte:input.dormitorios_max};
+            filter1.numero_banios={$gte:input.banios_min,$lte:input.banios_max};
+            filter1.numero_garaje={$gte:input.garaje_min,$lte:input.garaje_max};
+            filter1.superficie_terreno={$gte:input.superficie_terreno_min,$lte:input.superficie_terreno_max};
+            filter1.superficie_construccion={$gte:input.superficie_construccion_min,$lte:input.superficie_construccion_max};
+            filter1.tiempo_construccion={$gte:input.tiempo_construccion_min,$lte:input.tiempo_construccion_max};
+            filter1.precio={$gte:input.precio_min,$lte:input.precio_max};
             filter1.autorizacion={$in:"Activo"};
             filter1.estado_inmueble={$nin:"Vendido"};
             const inmuebles=Inmueble.find(filter1).sort({precio:1});
@@ -196,11 +198,13 @@ const resolvers={
             filter2.usuario={$in:""};
             if(input.id_usuario!=""){
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{"usuario":input.id_usuario},
                     populate:{path:"usuario"}});
             }else{
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{filter2},
                     populate:{path:"usuario"}});
@@ -211,22 +215,25 @@ const resolvers={
             var filter1={};
             if(input1.ciudad!="Todos") filter1.ciudad={$in:input1.ciudad};
             if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
-            filter1.autorizacion={$in:"Activo"};
+            //filter1.autorizacion={$in:"Activo"};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
             //console.log("filtro....",filter1);
 
-            const inmuebles=Inmueble.find(filter1).sort({precio:1});
+            //const inmuebles=Inmueble.find(filter1).sort({precio:1}).sort({tiempo_construccion:1});
+            const inmuebles=Inmueble.find(filter1);
             let filter2={};
             console.log("id_usuario",input1.id_usuario);
             filter2.usuario={$in:""};
             //await inmuebles.find({}).populate("agencia",{});
             if(input1.id_usuario!=""){
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{"usuario":input1.id_usuario},
                     populate:{path:"usuario"}});
             }else{
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{filter2},
                     populate:{path:"usuario"}});
@@ -250,11 +257,13 @@ const resolvers={
             //await inmuebles.find({}).populate("agencia",{});
             if(input1.id_usuario!=""){
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{"usuario":input1.id_usuario},
                     populate:{path:"usuario"}});
             }else{
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{filter2},
                     populate:{path:"usuario"}});
@@ -265,12 +274,14 @@ const resolvers={
             const inmuebleFavorito=await InmuebleFavorito.find({usuario:id})
             .populate({
                 path: "usuario"
-            }).populate({
+            })
+            .populate({
                 path: "inmueble",
                 populate:{
                     path:"agencia"
                 }
-            });
+            })
+            .populate({path:"imagenes"});
             return inmuebleFavorito;
         },
         obtenerMisInmueblesVenta: async (_,{id})=>{
@@ -286,6 +297,7 @@ const resolvers={
             filter2.usuario={$in:""};
             //await inmuebles.find({}).populate("agencia",{});
             await inmuebles.find({}).populate("creador",{})
+            .populate("imagenes",{})
             .populate({
                 path:"usuarios_favorito",match:{filter2},
                 populate:{path:"usuario"}});
@@ -324,6 +336,7 @@ const resolvers={
             let administradorImmueble= AdministradorImmueble.find(filter1).sort({fecha_solicitud:1});
             await administradorImmueble.find({}).populate({
                 path:"inmueble",populate:({path:"creador"})})
+                .populate({path:"imagenes"})
                 .populate({path:"usuario_solicitante"})
                 .populate({path:"usuario_respondedor"});
             
@@ -344,6 +357,7 @@ const resolvers={
             let solicitudesUsuarios= SolicitudesUsuarios.find(filter1).sort({fecha_solicitud:1});
             await solicitudesUsuarios.find({}).populate({
                 path:"inmueble",populate:({path:"creador"})})
+                .populate({path:"imagenes"})
                 .populate({path:"usuario_solicitante"})
                 .populate({path:"usuario_respondedor"});
             return solicitudesUsuarios;
@@ -609,7 +623,7 @@ const resolvers={
 
             return "Se guardaron los cambios";
         },
-        actualizarInmueble: async(_,{id,input})=>{
+        actualizarInmueble: async(_,{id,input1,input2})=>{
             let modificar=true;
             let crearSolicitud=true; 
             let inmueble=await Inmueble.findById(id);
@@ -651,7 +665,8 @@ const resolvers={
                 }
             }
             if(modificar==true){
-                await Inmueble.findOneAndUpdate({_id:id},input);
+                await Inmueble.findOneAndUpdate({_id:id},input1);
+                await InmuebleImagenes.findOneAndUpdate({inmueble:id},input2);
             }
             var fecha=new Date();
             if(crearSolicitud==true){
@@ -662,13 +677,15 @@ const resolvers={
                     solicitudesAdministradores.fecha_solicitud=fecha;
                     solicitudesAdministradores.respuesta="";
                     solicitudesAdministradores.observaciones="";
-                    solicitudesAdministradores.link_respaldo="";
+                    solicitudesAdministradores.link_respaldo_solicitud="";
+                    solicitudesAdministradores.link_respaldo_respuesta="";
                     await solicitudesAdministradores.save();
                     administradorInmueble.respuesta="";
                     administradorInmueble.tipo_solicitud="Dar alta";
                     administradorInmueble.fecha_solicitud=fecha;
                     administradorInmueble.observaciones="";
-                    administradorInmueble.link_respaldo="";
+                    administradorInmueble.link_respaldo_solicitud="";
+                    administradorInmueble.link_respaldo_respuesta="";
                     administradorInmueble.solicitud_terminada=false;
                     administradorInmueble.respuesta_entregada=false;
                     await administradorInmueble.save();
@@ -679,13 +696,15 @@ const resolvers={
                     solicitudesAdministradores.fecha_solicitud=fecha;
                     solicitudesAdministradores.respuesta="";
                     solicitudesAdministradores.observaciones="";
-                    solicitudesAdministradores.link_respaldo="";
+                    solicitudesAdministradores.link_respaldo_solicitud="";
+                    solicitudesAdministradores.link_respaldo_respuesta="";
                     await solicitudesAdministradores.save();
                     administradorInmueble.respuesta="";
                     administradorInmueble.tipo_solicitud="Modificar datos";
                     administradorInmueble.fecha_solicitud=fecha;
                     administradorInmueble.observaciones="";
-                    administradorInmueble.link_respaldo="";
+                    administradorInmueble.link_respaldo_solicitud="";
+                    administradorInmueble.link_respaldo_respuesta="";
                     administradorInmueble.solicitud_terminada=false;
                     administradorInmueble.respuesta_entregada=false;
                     await administradorInmueble.save();
@@ -1026,7 +1045,7 @@ const resolvers={
         },
         registrarInmuebleMasivo: async (_,{id})=>{
             var min=3;
-            var max=3;
+            var max=6;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let url_imagenes=[
@@ -1077,7 +1096,7 @@ const resolvers={
                         "Loredo","Peredo","Abastoflor","Paco","Rodriguez","Dominguez",
                         "Fuentes","Gallardo","Guzman","Suarez","Vega","Bejarano","Palacios",
                         "Garcilazo","Bohorquez","Branco","Arancibia","Puma","Nogales"];
-            let estado_inmueble=[""];
+            let estado_inmueble=["Sin negociar"];
             //let estado_inmueble=["Sin negociar","Sin negociar","Sin negociar","Negociación inicial","Negociación avanzada","Vendido"];
             let ciudades=["La Paz","Oruro","Potosi","Cochabamba","Tarija","Sucre","Santa Cruz","Beni","Pando"];
             let zona=["Zona 1","Zona 2","Zona 3","Zona 4","Zona 5","Zona 6","Zona 7","Zona 8","Zona ","Zona 10"];
@@ -1089,6 +1108,7 @@ const resolvers={
             let video_tour=["","www.linkvideotour"];
             let valores_booleanos=[true,false];
             const cantidad_inmuebles=Math.floor(Math.random() * (max - min)) + min;
+            //const cantidad_inmuebles=600;
             var i=0;
             for(i=0;i<cantidad_inmuebles;i++){
                 let secuencia=await SecuenciasIndices.findOne();
@@ -1141,7 +1161,6 @@ const resolvers={
                         inmueble.historial_precios.push(inmueble.precio-numero_aleatorio);
                     }
                 }
-                
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.documentos_dia=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
@@ -1159,19 +1178,13 @@ const resolvers={
                 inmueble.numero_pisos=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.sin_hipoteca=valores_booleanos[numero_aleatorio];
-                let imagenes=[];
-                var cantidad_imagenes=Math.floor(Math.random() * (4  - 0)) + 1;
-                var j=0;
-                for(j=0;j<cantidad_imagenes;j++){
-                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
-                    imagenes.push(url_imagenes[numero_aleatorio]);
-                }
+                
                 numero_aleatorio=Math.floor(Math.random() * (11  - 0)) + 1;
                 inmueble.coordenadas.push(Math.round((latitud-1/numero_aleatorio)*10000)/10000);
                 numero_aleatorio=Math.floor(Math.random() * (80  - 0)) + 1;
                 inmueble.coordenadas.push(Math.round((longitud-1/numero_aleatorio)*10000)/10000);
                 inmueble.creador=id;
-                inmueble.url_imagenes=imagenes;
+                
                 
                 numero_aleatorio=Math.floor(Math.random() * (5 - 0)) + 1;
                 inmueble.numero_dormitorios=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
@@ -1263,6 +1276,71 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
+                inmueble.estado_inmueble="Activo";
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.promocionado=valores_booleanos[numero_aleatorio];
+
+                const inmuebleImagenes=InmuebleImagenes();
+                let imagenes=[];
+                var cantidad_imagenes=3;
+
+                var j=0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_principal=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (2  - 0)) + 1;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_exteriores=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_dormitorios=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_banios=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_garaje=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_hall=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_jardin=imagenes;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.url_imagenes_dependencias=imagenes;
+                inmuebleImagenes.inmueble=inmueble.id;
+                inmueble.imagenes=inmuebleImagenes.id;
                 //console.log(inmueble);
                 //console.log(inmuebleInternas);
                 //console.log(inmuebleComunidad);
@@ -1278,7 +1356,8 @@ const resolvers={
                 administradorInmueble.tipo_solicitud="Dar alta";
                 administradorInmueble.respuesta="";
                 administradorInmueble.observaciones="";
-                administradorInmueble.link_respaldo="";
+                administradorInmueble.link_respaldo_solicitud="";
+                administradorInmueble.link_respaldo_respuesta="";
                 administradorInmueble.inmueble=inmueble.id;
                 administradorInmueble.usuario_solicitante=id;
                 await administradorInmueble.save();
@@ -1288,7 +1367,8 @@ const resolvers={
                 solicitudesAdministradores.fecha_solicitud=administradorInmueble.fecha_solicitud;
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
-                solicitudesAdministradores.link_respaldo="";
+                solicitudesAdministradores.link_respaldo_solicitud="";
+                solicitudesAdministradores.link_respaldo_respuesta="";
                 solicitudesAdministradores.inmueble=inmueble.id;
                 solicitudesAdministradores.usuario_solicitante=id;
                 await solicitudesAdministradores.save();
@@ -1314,6 +1394,7 @@ const resolvers={
         */
                 await secuencia.save();
                 await inmueble.save();
+                await inmuebleImagenes.save();
                // pubsub.publish(INMUEBLE_ADDED,{inmuebleAdded: inmueble});
                 //await inmueble.save();
             }

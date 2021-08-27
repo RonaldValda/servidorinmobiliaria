@@ -30,7 +30,6 @@ type Inmueble{
     numero_duenios: Int
     numero_pisos: Int
     sin_hipoteca: Boolean
-    url_imagenes: [String]
     historial_precios: [Int]
     coordenadas: [Float]
     numero_dormitorios: Int
@@ -69,18 +68,51 @@ type Inmueble{
     fecha_publicacion: Date
     autorizacion: String
     ultima_modificacion: Date
+    calificacion:Int
+    promocionado:Boolean
     creador:Usuario
     usuarios_favorito: [UsuarioFavorito]
+    imagenes:InmuebleImagenes
+}
+type InmuebleImagenes{
+    id:ID
+    inmueble:ID
+    url_imagenes_principal:[String]
+    url_imagenes_exteriores:[String]
+    url_imagenes_dormitorios:[String]
+    url_imagenes_banios:[String]
+    url_imagenes_garaje:[String]
+    url_imagenes_hall:[String]
+    url_imagenes_jardin:[String]
+    url_imagenes_dependencias:[String]
+}
+input InmuebleImagenesInput{
+    url_imagenes_principal:[String]
+    url_imagenes_exteriores:[String]
+    url_imagenes_dormitorios:[String]
+    url_imagenes_banios:[String]
+    url_imagenes_garaje:[String]
+    url_imagenes_hall:[String]
+    url_imagenes_jardin:[String]
+    url_imagenes_dependencias:[String]
 }
 input ObtenerInmuebleNuevoInput{
     fecha: Date
     id_usuario: String
-    dormitorios: Int
-    banios: Int
-    garaje: Int
-    superficie_terreno: Int
-    superficie_construccion: Int
-    tiempo_construccion: Int
+    dormitorios_min: Int
+    dormitorios_max: Int
+    banios_min: Int
+    banios_max: Int
+    garaje_min: Int
+    garaje_max: Int
+    superficie_terreno_min: Int
+    superficie_terreno_max: Int
+    superficie_construccion_min: Int
+    superficie_construccion_max: Int
+    tiempo_construccion_min: Int
+    tiempo_construccion_max: Int
+    precio_min: Int
+    precio_max: Int
 }
 input InmuebleInput{
     nombre_propietario: String
@@ -103,7 +135,6 @@ input InmuebleInput{
     numero_duenios: Int
     numero_pisos: Int
     sin_hipoteca: Boolean
-    url_imagenes: [String]
     coordenadas: [Float]
     numero_dormitorios: Int
     numero_banios: Int
@@ -156,21 +187,37 @@ input InmuebleFavoritoInput{
 }
 type UsuarioInmuebleBase{
     id: ID
-    dormitorios: Int
-    banios: Int
-    garaje: Int
-    superficie_terreno: Int
-    superficie_construccion: Int
-    tiempo_construccion: Int
+    dormitorios_min: Int
+    dormitorios_max: Int
+    banios_min: Int
+    banios_max: Int
+    garaje_min: Int
+    garaje_max: Int
+    superficie_terreno_min: Int
+    superficie_terreno_max: Int
+    superficie_construccion_min: Int
+    superficie_construccion_max: Int
+    tiempo_construccion_min: Int
+    tiempo_construccion_max: Int
+    precio_min: Int
+    precio_max: Int
     fecha_inicio: Date
 }
 input UsuarioInmuebleBaseInput{
-    dormitorios: Int
-    banios: Int
-    garaje: Int
-    superficie_terreno: Int
-    superficie_construccion: Int
-    tiempo_construccion: Int
+    dormitorios_min: Int
+    dormitorios_max: Int
+    banios_min: Int
+    banios_max: Int
+    garaje_min: Int
+    garaje_max: Int
+    superficie_terreno_min: Int
+    superficie_terreno_max: Int
+    superficie_construccion_min: Int
+    superficie_construccion_max: Int
+    tiempo_construccion_min: Int
+    tiempo_construccion_max: Int
+    precio_min: Int
+    precio_max: Int
 }
 
 
@@ -233,8 +280,8 @@ input FiltroSimpleInmuebleInput{
     id_usuario: String
 }
 extend type Mutation {
-    registrarInmueble(id: ID!, input: InmuebleInput) : String
-    actualizarInmueble(id: ID!, input: InmuebleInput) : String
+    registrarInmueble(id: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput) : String
+    actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput) : String
     actualizarPrecioInmueble(id: ID!, precio: Int) : String
     eliminarInmueble(id: ID!) : String
     registrarInmuebleMasivo(id: ID!): String

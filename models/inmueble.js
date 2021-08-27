@@ -65,9 +65,6 @@ const InmuebleSchema = new mongoose.Schema({
     sin_hipoteca:{
         type: Boolean
     },
-    url_imagenes:{
-        type: Array
-    },
     historial_precios:{
         type: Array
     },
@@ -174,6 +171,10 @@ const InmuebleSchema = new mongoose.Schema({
         type: String
     },
     //llaves foraneas
+    imagenes: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'InmuebleImagenes'
+    },
     creador: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
@@ -200,6 +201,10 @@ const InmuebleSchema = new mongoose.Schema({
     calificacion:{
         type: Number,
         Default:0
-    } 
+    },
+    promocionado:{
+        type: Boolean,
+        Default: false
+    }
 });
 module.exports = mongoose.model('Inmueble', InmuebleSchema);

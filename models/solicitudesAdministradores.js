@@ -22,7 +22,10 @@ const SolicitudesAdministradoresSchema = new mongoose.Schema({
     observaciones:{
         type:String
     },
-    link_respaldo:{
+    link_respaldo_respuesta:{
+        type:String
+    },
+    link_respaldo_solicitud:{
         type:String
     },
     solicitud_terminada:{
