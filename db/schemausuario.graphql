@@ -1,12 +1,18 @@
     
     extend type Query {
         obtenerUsuarios: [Usuario]
-        obtenerUsuarioEmail(email:String) : [Usuario] 
+        obtenerUsuarioEmail(email:String) : Usuario
+        autenticarUsuarioAutomatico(email:String,imei:String) : Usuario 
         obtenerUsuariosID(input: UsuarioIDInput) : [Usuario] 
         obtenerUsuarioFavorito(id:ID) : [UsuarioFavorito]
         obtenerAdministradorInmueble(id:ID):[AdministradorInmueble]
         obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
         obtenerSolicitudesUsuarios(id:ID):[SolicitudesUsuarios]
+        obtenerCuentasBancos:[CuentaBanco]
+        obtenerAgentePagos(id:ID):[AgentePago]
+        obtenerAgentePagosAdministrador(id:ID):[AgentePago]
+        obtenerPlanesPagoAgente:[PlanesPagoAgente]
+        obtenerVersionesAPP:VersionesAPP
     }
 
     input UsuarioIDInput {
@@ -15,12 +21,15 @@
 
     type Usuario {
         id: ID
-        nombre: String
-        nombre_usuario: String
+        nombres: String
+        apellidos: String
+        imei_telefono: String
         email: String
         medio_registro: String
         fecha_ultimo_ingreso: String
-        usuario_inmueble_base: UsuarioInmuebleBase
+        base_visto: UsuarioInmuebleBase
+        base_doble_visto: UsuarioInmuebleBase
+        base_favorito: UsuarioInmuebleBase
         tipo_usuario: String
         nombre_agencia: String
         telefono: String
@@ -29,6 +38,7 @@
         estado_cuenta: Boolean
         sumatoria_calificacion:Int
         cantidad_inmuebles_calificados:Int
+        agente_pagos:[AgentePago]
     }
 
     type Token {
@@ -36,8 +46,8 @@
     }
 
     input UsuarioInput {
-        nombre: String!
-        nombre_usuario: String
+        nombres: String!
+        apellidos: String
         email: String!
         password: String!
         medio_registro: String
@@ -46,11 +56,12 @@
     }
 
     input AutenticarInput {
-        nombre: String!
-        nombre_usuario: String!
-        email: String!
-        password: String!
-        medio_registro: String!
+        nombres: String
+        apellidos: String
+        imei_telefono: String
+        email: String
+        password: String
+        medio_registro: String
         fecha_ultimo_ingreso: Date
         tipo_usuario: String
         nombre_agencia: String
@@ -108,6 +119,17 @@
         observaciones:String
         solicitud_terminada:Boolean
     }
+    type CuentaBanco{
+        id:ID
+        fecha_habilitacion:Date
+        fecha_cierre:Date
+        activo:Boolean
+        numero_cuenta:String
+        titular:String
+        nombre_banco:String
+        link_logo_banco:String
+    }
+    
     input UsuarioFavoritoInput{
         visto: Boolean
         doble_visto: Boolean
@@ -136,8 +158,114 @@
         usuario:Usuario
         inmueble:Inmueble
     }
+    input CuentaBancoInput{
+        activo:Boolean
+        numero_cuenta:String
+        titular:String
+        nombre_banco:String
+        link_logo_banco:String
+    }
+    type PlanesPagoAgente{
+        id:ID
+        nombre_plan:String
+        plan:Int
+        monto_mensual:Int
+        activo:Boolean
+    }
+    input PlanesPagoAgenteInput{
+        nombre_plan:String
+        plan:Int
+        monto_mensual:Int
+        activo:Boolean
+    }
+    type AgentePago{
+        id:ID
+        fecha_solicitud:Date
+        mes:Int
+        medio_pago:String
+        monto_pago:Int
+        plan:Int
+        numero_transaccion:String
+        cuenta_banco:CuentaBanco
+        nombre_depositante:String
+        link_imagen_deposito:String
+        autorizacion:String
+        observaciones:String
+        fecha_respuesta:Date
+        respuesta_entregada:Boolean
+        fecha_inicio:Date
+        activo:Boolean
+        fecha_cancelacion:String
+        motivo_cancelacion:String
+        agente:Usuario
+        administrador:Usuario
+    }
+    input AgentePagoInput{
+        mes:Int
+        medio_pago:String
+        monto_pago:Int
+        plan:Int
+        numero_transaccion:String
+        cuenta_banco:ID
+        nombre_depositante:String
+        link_imagen_deposito:String
+        observaciones:String
+        agente:ID
+    }
+    type AdministradorAgente{
+        id:ID
+        fecha_solicitud:Date
+        fecha_respuesta:Date
+        mes:Int
+        respuesta_entregada:Boolean
+        tipo_solicitud:Boolean
+        medio_pago:String
+        monto_pago:Int
+        numero_plan:Int
+        respuesta:String
+        observaciones:String
+        link_respaldo_solicitud:String
+        link_respaldo_respuesta:String
+        solicitud_terminada:Boolean
+        agente:Usuario
+        administrador:Usuario
+    }
+    input AdministradorAgenteInput{
+        mes:Int
+        tipo_solicitud:String
+        medio_pago:String
+        monto_pago:Int
+        numero_plan:Int
+        respuesta:String
+        observaciones:String
+        link_respaldo_solicitud:String
+        link_respaldo_respuesta:String
+        agente:ID
+    }
+    type EmailClaveVerificaciones{
+        id:ID
+        fecha_creacion:Date
+        fecha_vencimiento:Date
+        email:String
+        clave:Int
+        usuario:Usuario
+    }
+    input EmailClaveVerificacionesInput{
+        email:String
+    }
+    type VersionesAPP{
+        id:ID
+        numero_version:String
+        fecha_publicacion:Date
+        link_descarga:String
+    }
+    input VersionesAPPInput{
+        numero_version:String
+        fecha_publicacion:Date
+        link_descarga:String
+    }
     extend type Mutation {
-        crearUsuario(input: AutenticarInput) : Usuario
+        crearModificarUsuario(input: AutenticarInput,actividad:String) : Usuario
         autenticarUsuario(input: AutenticarInput) : Usuario
         #registrarInmuebleFavorito(id_inmueble:ID, id_usuario:ID, input: UsuarioFavoritoInput) : String
         #registrarInmuebleBase(input: UsuarioInmuebleBaseInput): String
@@ -145,4 +273,13 @@
         responderSolicitudUsuarioCalificacion(id_solicitud:ID,calificacion:Int):String
         modificarEstadoInmuebleVendedor(id_inmueble:ID,tipo_accion:String):String
         #registrarBitacoraInmueble(id_inmueble:ID,id_usuario:ID,actividad:String):String
+        registrarCuentaBanco(input: CuentaBancoInput) : CuentaBanco
+        registrarAgentePago(input: AgentePagoInput) : AgentePago
+        responderAgentePago(id:ID,id_administrador:ID,autorizacion:String,observaciones:String) : AgentePago
+        registrarSolicitudAdministradorAgente(input:AdministradorAgenteInput) : String
+        registrarPlanesPagoAgente(input:PlanesPagoAgenteInput) : String
+        registrarEmailClaveVerificaciones(input:EmailClaveVerificacionesInput,actividad:String) : EmailClaveVerificaciones
+        obtenerEmailClaveVerificaciones(email:String,clave:Int):EmailClaveVerificaciones
+        registrarVersionesAPP(input:VersionesAPPInput):String
+        buscarUsuarioEmail(email:String) : Usuario
     }

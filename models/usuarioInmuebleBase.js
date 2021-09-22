@@ -31,10 +31,10 @@ const UsuarioInmuebleBaseSchema = new mongoose.Schema({
     superficie_construccion_max:{
         type: Number
     },
-    tiempo_construccion_min:{
+    antiguedad_construccion_min:{
         type: Number
     },
-    tiempo_construccion_max: {
+    antiguedad_construccion_max: {
         type: Number
     },
     precio_min: {
@@ -45,6 +45,9 @@ const UsuarioInmuebleBaseSchema = new mongoose.Schema({
     },
     fecha_inicio:{
         type:Date
+    },
+    tipo:{
+        type:String
     },
     usuario: {
         type: mongoose.Schema.Types.ObjectId,

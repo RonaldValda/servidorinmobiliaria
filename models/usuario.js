@@ -1,22 +1,22 @@
 const mongoose = require('mongoose');
 const UsuarioSchema = mongoose.Schema({
-    nombre: {
+    nombres: {
         type: String,
-        required: true,
         trim: true
     },
-    nombre_usuario:{
+    apellidos:{
         type: String
+    },
+    imei_telefono:{
+        type:String,
+        trim:true,
     },
     email: {
         type: String,
-        required: true,
-        trim: true,
-        unique: true
+        trim: true
     },
     password: {
         type: String,
-        required: true,
         trim: true,
     },
     medio_registro:{
@@ -60,9 +60,14 @@ const UsuarioSchema = mongoose.Schema({
         type:Number,
         default: 0
     },
-    usuario_inmueble_base: {
+    agente_pagos:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'AgentePago',default:{}
+    }],
+    usuario_inmueble_base: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'UsuarioInmuebleBase'
-    },
+        ref: 'UsuarioInmuebleBase',
+        default:{}
+    }],
 });
 module.exports = mongoose.model('Usuario',UsuarioSchema);

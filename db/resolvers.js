@@ -13,6 +13,14 @@ const SolicitudesUsuarios=require('../models/solicitudesUsuarios');
 const SolicitudesAdministradores=require('../models/solicitudesAdministradores');
 const AdministradorImmueble=require('../models/administradorInmueble');
 const BitacoraInmueble=require('../models/bitacoraInmueble');
+const CuentasBanco=require('../models/cuentasBanco');
+const AdministradorAgente=require('../models/administradorAgente');
+const AgentePago=require('../models/agentePago');
+const PlanesPagoAgente=require("../models/planesPagoAgente");
+const transporter=require("../models/mailer");
+const EmailClaveVerificaciones=require('../models/emailClaveVerificaciones');
+const VersionesAPP=require('../models/versionesAPP');
+const Zona=require('../models/zona');
 require('dotenv').config({path: 'variables.env'})
 //const { PubSub } = require('graphql-subscriptions')
 
@@ -25,6 +33,9 @@ const crearToken = (usuario,secreta,expiresIn)=>{
     const {id,email}=usuario;
 
     return jwt.sign({id,email},secreta,{expiresIn});
+}
+const enviarEmail=()=>{
+
 }
 const resolvers={
     Query:{
@@ -57,9 +68,9 @@ const resolvers={
             return usuarios;
         },
         obtenerUsuarioEmail: async(_,{email})=>{
-            const usuarios=await Usuario.find().where('email').equals(email);
+            const usuario=await Usuario.findOne({email:email});
             //console.log("usuario", input.usuario);
-            return usuarios;
+            return usuario;
         },
         obtenerAgencias: async(_,{})=>{
             const agencias=await Agencia.find();
@@ -187,10 +198,10 @@ const resolvers={
             filter1.numero_garaje={$gte:input.garaje_min,$lte:input.garaje_max};
             filter1.superficie_terreno={$gte:input.superficie_terreno_min,$lte:input.superficie_terreno_max};
             filter1.superficie_construccion={$gte:input.superficie_construccion_min,$lte:input.superficie_construccion_max};
-            filter1.tiempo_construccion={$gte:input.tiempo_construccion_min,$lte:input.tiempo_construccion_max};
+            filter1.antiguedad_construccion={$gte:input.antiguedad_construccion_min,$lte:input.antiguedad_construccion_max};
             filter1.precio={$gte:input.precio_min,$lte:input.precio_max};
             filter1.autorizacion={$in:"Activo"};
-            filter1.estado_inmueble={$nin:"Vendido"};
+            filter1.estado_negociacion={$nin:"Vendido"};
             const inmuebles=Inmueble.find(filter1).sort({precio:1});
         
             let filter2={};
@@ -222,17 +233,19 @@ const resolvers={
             //const inmuebles=Inmueble.find(filter1).sort({precio:1}).sort({tiempo_construccion:1});
             const inmuebles=Inmueble.find(filter1);
             let filter2={};
-            console.log("id_usuario",input1.id_usuario);
+            //console.log("id_usuario",input1.id_usuario);
             filter2.usuario={$in:""};
             //await inmuebles.find({}).populate("agencia",{});
             if(input1.id_usuario!=""){
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
                 .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{"usuario":input1.id_usuario},
                     populate:{path:"usuario"}});
             }else{
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
                 .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{filter2},
@@ -257,12 +270,14 @@ const resolvers={
             //await inmuebles.find({}).populate("agencia",{});
             if(input1.id_usuario!=""){
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
                 .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{"usuario":input1.id_usuario},
                     populate:{path:"usuario"}});
             }else{
                 await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
                 .populate({path:"imagenes"})
                 .populate({
                     path:"usuarios_favorito",match:{filter2},
@@ -286,7 +301,7 @@ const resolvers={
         },
         obtenerMisInmueblesVenta: async (_,{id})=>{
             var filter1={};
-            filter1.creador={$in:id};
+            //filter1.creador={$in:id};
             //if(input1.autorizacion!="Todos") filter1.ciudad={$in:input1.ciudad};
             //if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
@@ -294,12 +309,19 @@ const resolvers={
 
             const inmuebles=Inmueble.find(filter1).sort({fecha_creacion:1});
             let filter2={};
-            filter2.usuario={$in:""};
+            filter2.usuario={$in:id};
+            let filter3={};
+            filter3.verificado=false;
             //await inmuebles.find({}).populate("agencia",{});
-            await inmuebles.find({}).populate("creador",{})
+            /*await inmuebles.find({}).populate("creador",{})
             .populate("imagenes",{})
             .populate({
-                path:"usuarios_favorito",match:{filter2},
+                path:"usuarios_favorito",match:filter2});*/
+            await inmuebles.find({}).populate("creador",{})
+            .populate({path:"propietario"})
+            .populate("imagenes",{})
+            .populate({
+                path:"usuarios_favorito",match:filter2,
                 populate:{path:"usuario"}});
             
             return inmuebles;
@@ -334,11 +356,16 @@ const resolvers={
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
             //console.log("filtro....",filter1);
             let administradorImmueble= AdministradorImmueble.find(filter1).sort({fecha_solicitud:1});
-            await administradorImmueble.find({}).populate({
-                path:"inmueble",populate:({path:"creador"})})
-                .populate({path:"imagenes"})
+            /*await administradorImmueble.find({}).populate({
+                path:"inmueble",populate:({path:"imagenes"}),populate:({path:"creador"})})
                 .populate({path:"usuario_solicitante"})
-                .populate({path:"usuario_respondedor"});
+                .populate({path:"usuario_respondedor"});*/
+                await administradorImmueble.find({}).populate({
+                    path:"inmueble",populate:{path:"creador"}})
+                    .populate({path:"propietario"})
+                    .populate({path:"inmueble",populate:{path:"imagenes"}})
+                    .populate({path:"usuario_solicitante"})
+                    .populate({path:"usuario_respondedor"});
             
             return administradorImmueble;
         },
@@ -356,12 +383,107 @@ const resolvers={
             filter1.solicitud_terminada={$in:false};
             let solicitudesUsuarios= SolicitudesUsuarios.find(filter1).sort({fecha_solicitud:1});
             await solicitudesUsuarios.find({}).populate({
-                path:"inmueble",populate:({path:"creador"})})
+                path:"inmueble",populate:({path:"imagenes"})})
+                .populate({path:"inmueble",populate:({path:"creador"})})
+                .populate({path:"propietario"})
                 .populate({path:"imagenes"})
                 .populate({path:"usuario_solicitante"})
                 .populate({path:"usuario_respondedor"});
             return solicitudesUsuarios;
         },
+        obtenerCuentasBancos: async(_,{})=>{
+            let cuentasBanco=CuentasBanco.find({});
+            return cuentasBanco;
+        },
+        obtenerAgentePagos: async(_,{id})=>{
+            var filter1={};
+            filter1.agente=id;
+            let agentePago=AgentePago.find(filter1).sort({mes:1});
+            await agentePago.find({})
+                .populate({path:"cuenta_banco"})
+                .populate({path:"agente"})
+                .populate({path:"administrador"});
+            return agentePago;
+        },
+        obtenerAgentePagosAdministrador: async(_,{id})=>{
+            var filter1={};
+            filter1.administrador={$in:[null,id]};
+            filter1.autorizacion="Pendiente";
+            let agentePago=AgentePago.find(filter1).sort({fecha_solicitud:1});
+            await agentePago.find({})
+                .populate({path:"cuenta_banco"})
+                .populate({path:"agente"})
+                .populate({path:"administrador"});
+            return agentePago;
+        },
+        obtenerPlanesPagoAgente: async(_)=>{
+            var filter1={};
+            filter1.activo=true;
+            let planesPagoAgente=PlanesPagoAgente.find(filter1).sort({plan:1});
+            return planesPagoAgente;
+        },
+        obtenerVersionesAPP: async(_)=>{
+            let versionesAPP=await VersionesAPP.findOne({}).sort({fecha_publicacion:1})
+            return versionesAPP;     
+        },
+        autenticarUsuarioAutomatico: async (_,{email,imei}) => {
+            let usuario;
+            var fecha=new Date();
+            if(email!=""){
+                var filter1={};
+                var mes=fecha.getMonth();
+                filter1.mes={$gte:mes};
+                //fecha.setDate(fecha.getDate()-3);
+                await Usuario.findOneAndUpdate({email:email},{fecha_ultimo_ingreso:fecha})
+                usuario=await Usuario.findOne({email:email})
+                .populate({path:"base_visto",match:{tipo:"visto"}})
+                .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
+                .populate({path:"favorito",match:{tipo:"favorito"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"cuenta_banco"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"agente"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"administrador"}});
+                return usuario;
+            }else if(imei!=""){
+                const existeUsuario = await Usuario.findOne({ imei_telefono:imei });
+                if(!existeUsuario){
+                    const nuevoUsuario = new Usuario();
+                    nuevoUsuario.fecha_ultimo_ingreso=fecha;
+                    nuevoUsuario.imei_telefono=imei;
+                    nuevoUsuario.tipo_usuario="Común";
+                    nuevoUsuario.medio_registro="Defecto";
+                    await nuevoUsuario.save();
+                }
+                usuario=await Usuario.findOne({imei_telefono:imei})
+                    .populate("usuario_inmueble_base")
+                    .populate({path:"agente_pagos",
+                    populate:{path:"cuenta_banco"}})
+                    .populate({path:"agente_pagos",
+                    populate:{path:"agente"}})
+                    .populate({path:"agente_pagos",
+                    populate:{path:"administrador"}});
+                return usuario;
+            }else{
+                usuario=await Usuario.findOne({email:""})
+                .populate({path:"base_visto",match:{tipo:"visto"}})
+                .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
+                .populate({path:"favorito",match:{tipo:"favorito"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"cuenta_banco"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"agente"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"administrador"}});
+                return usuario;
+            }
+        },
+        obtenerZonas: async(_,{ciudad})=>{
+            let zonas=await Zona.find({ciudad:ciudad});
+            return zonas;     
+        },
+
     },
 
     /*Subscription: {
@@ -370,27 +492,49 @@ const resolvers={
         }
     },*/
     Mutation: {
-        crearUsuario: async (_,{input}) => {
+        crearModificarUsuario: async (_,{input,actividad}) => {
             const {email,password}=input;
             const existeUsuario = await Usuario.findOne({ email });
             let usuario;
+            var filter1={};
+            var fecha=new Date();
+            var mes=fecha.getMonth();
+            filter1.mes={$gte:mes};
             if(existeUsuario){
-                throw new Error('El usuario ya está registrado');
+                if(actividad=="Registrar"){
+                    throw new Error('El usuario ya está registrado');
+                }
+            }else{
+                if(actividad=="Recuperar"){
+                    throw new Error('El usuario no está registrado');
+                }
             }
             try{
-
                 //hashear password
                 const salt = await bcryptjs.genSalt(10);
                 input.password = await bcryptjs.hash(password,salt);
+                if(actividad=="Registrar"){
+                    const nuevoUsuario = new Usuario(input);
+                    await nuevoUsuario.save();
+                }else if(actividad=="Recuperar"){
+                    usuario=await Usuario.findOne({email:input.email});
+                    usuario.password=input.password;
+                    usuario.save();
+                    //await Usuario.findOneAndUpdate({email:input.email},input);
+                }else{
 
-                //console.log(input);
-
-                //Registrar un nuevo usuario
-                const nuevoUsuario = new Usuario(input);
-                //console.log(nuevoUsuario);
-
-                await nuevoUsuario.save();
-                usuario=await Usuario.findOne({email:input.email}).populate("usuario_inmueble_base");
+                }
+                
+                usuario=await Usuario.findOne({email:input.email})
+                    .populate({path:"base_visto",match:{tipo:"visto"}})
+                    .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
+                    .populate({path:"favorito",match:{tipo:"favorito"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"cuenta_banco"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"agente"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"administrador"}});
                 return usuario;
                 
             }catch(error){
@@ -405,6 +549,10 @@ const resolvers={
             const existeUsuario = await Usuario.findOne({ email });
             let usuario;
             //console.log(existeUsuario);
+            var filter1={};
+            var fecha=new Date();
+            var mes=fecha.getMonth();
+            filter1.mes={$gte:mes};
             if(input.medio_registro=="Creada"){
                 if(!existeUsuario){
                     throw new Error('El usuario no existe');
@@ -420,7 +568,24 @@ const resolvers={
                 if(existeUsuario.estado_cuenta==false){
                     throw new Error('Cuenta inactiva, contáctese con el administrador');
                 }
-                usuario=Usuario.findOne({email:input.email}).populate("usuario_inmueble_base");
+                /*usuario=await Usuario.findOne({email:input.email})
+                .populate("usuario_inmueble_base")
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"cuenta_banco"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"agente"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"administrador"}});*/
+                usuario=await Usuario.findOne({email:input.email})
+                .populate({path:"base_visto",match:{tipo:"visto"}})
+                .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
+                .populate({path:"favorito",match:{tipo:"favorito"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"cuenta_banco"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"agente"}})
+                .populate({path:"agente_pagos",match:filter1,
+                populate:{path:"administrador"}});
             }else{
                 if(!existeUsuario){
                     const nuevoUsuario = new Usuario(input);
@@ -429,10 +594,31 @@ const resolvers={
                     await nuevoUsuario.save();
                     usuario=nuevoUsuario;
                 }else{
-                    var fecha=new Date();
+                    //var fecha=new Date();
                     fecha.setDate(fecha.getDate()-3);
                     await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
-                    usuario=await Usuario.findOne({email:input.email}).populate("usuario_inmueble_base");
+                    /*usuario=await Usuario.findOne({email:input.email})
+                    .populate("usuario_inmueble_base")
+                    .populate("agente_pagos");*/
+                    /*usuario=await Usuario.findOne({email:input.email})
+                    .populate("usuario_inmueble_base")
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"cuenta_banco"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"agente"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"administrador"}});*/
+                    usuario=await Usuario.findOne({email:input.email})
+                    .populate({path:"base_visto",match:{tipo:"visto"}})
+                    .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
+                    .populate({path:"favorito",match:{tipo:"favorito"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"cuenta_banco"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"agente"}})
+                    .populate({path:"agente_pagos",match:filter1,
+                    populate:{path:"administrador"}});
+                    
                     //await usuario.find({}).populate("usuario_inmueble_base",{});
                 }
             }
@@ -568,10 +754,19 @@ const resolvers={
         },
         registrarInmueble: async (_,{id,input}) => {
             try{
+                let secuencia=await SecuenciasIndices.findOne();
+                if(!secuencia){
+                    secuencia=SecuenciasIndices();
+                    secuencia.indice_inmuebles=1;
+                    await secuencia.save();
+                }
                 const nuevoInmueble = new Inmueble(input);
                 nuevoInmueble.creador=id;
+                nuevoInmueble.indice=secuencia.indice_inmuebles;
                 nuevoInmueble.historial_precios.push(nuevoInmueble.precio);
                 await nuevoInmueble.save();
+                secuencia.indice_inmuebles=secuencia.indice_inmuebles+1;
+                await secuencia.save();
                 let resultado=await Inmueble.find().where('_id').equals(nuevoInmueble.id);
                 console.log("imprimiendo resultado  ",resultado);
                 return "Se registro correctamente";
@@ -586,7 +781,7 @@ const resolvers={
             if(!inmueble){
                 throw new Error('Inmueble no encontrada');
             }
-            if(inmueble.estado_inmueble=="Vendido"){
+            if(inmueble.estado_negociacion=="Vendido"){
                 modificar=false;
                 crearSolicitud=false;
                 throw new Error('No se puede modificar, el inmueble ya fue vendido');
@@ -745,14 +940,17 @@ const resolvers={
 
             return "Inmueble eliminado";
         },
-        registrarInmuebleFavorito: async (_,{id_inmueble,id_usuario,input1,input2}) => {
+        registrarInmuebleFavorito: async (_,{id_inmueble,id_usuario,input1,input_visto,input_doble_visto,input_favorito}) => {
             try{
                 let inmuebleFavorito=await InmuebleFavorito.findOne({"inmueble":id_inmueble,"usuario":id_usuario});
                 let usuarioInmuebleBase=await UsuarioInmuebleBase.findOne({"usuario":id_usuario});
+                let base_visto=await UsuarioInmuebleBase.findOne({"usuario":id_usuario,"tipo":"visto"});
+                let base_doble_visto=await UsuarioInmuebleBase.findOne({"usuario":id_usuario,"tipo":"doble_visto"});
+                let base_favorito=await UsuarioInmuebleBase.findOne({"usuario":id_usuario,"tipo":"favorito"});
                 if(inmuebleFavorito){
                     await InmuebleFavorito.findOneAndUpdate({_id:inmuebleFavorito.id},input1);
                 }else{
-                    inmuebleFavorito=InmuebleFavorito(input1);
+                    inmuebleFavorito=new InmuebleFavorito(input1);
                     inmuebleFavorito.inmueble = id_inmueble;
                     inmuebleFavorito.usuario = id_usuario;
                     await inmuebleFavorito.save();
@@ -761,27 +959,50 @@ const resolvers={
                     await inmueble.save();
                     
                 }
-                if(usuarioInmuebleBase){
-                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario},input2);
+                let usuario=await Usuario.findById(id_usuario);
+
+                if(base_visto){
+                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"visto"},input_visto);
                 }else{
-                    usuarioInmuebleBase=UsuarioInmuebleBase(input2);
+                    usuarioInmuebleBase=new UsuarioInmuebleBase(input_visto);
                     usuarioInmuebleBase.usuario=id_usuario;
                     usuarioInmuebleBase.fecha_inicio=Date.now();
+                    usuario.usuario_inmueble_base.push(usuarioInmuebleBase.id);
+                    usuarioInmuebleBase.tipo="visto";
                     await usuarioInmuebleBase.save();
-                    //let usuario=await Usuario.findById(id_usuario);
-                    //console.log(usuario);
-                    //usuario.usuario_inmueble_base=usuarioInmuebleBase.id;
-                    //await usuario.save;
-                    await Usuario.findOneAndUpdate({_id:id_usuario},{usuario_inmueble_base:usuarioInmuebleBase.id});
                 }
+                if(base_doble_visto){
+                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"doble_visto"},input_doble_visto);
+                }else{
+                    usuarioInmuebleBase=new UsuarioInmuebleBase(input_visto);
+                    usuarioInmuebleBase.usuario=id_usuario;
+                    usuarioInmuebleBase.fecha_inicio=Date.now();
+                    usuario.usuario_inmueble_base.push(usuarioInmuebleBase.id);
+                    usuarioInmuebleBase.tipo="doble_visto";
+                    await usuarioInmuebleBase.save();
+                }
+                if(base_favorito){
+                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"favorito"},input_favorito);
+                }else{
+                    usuarioInmuebleBase=new UsuarioInmuebleBase(input_visto);
+                    usuarioInmuebleBase.usuario=id_usuario;
+                    usuarioInmuebleBase.fecha_inicio=Date.now();
+                    usuario.usuario_inmueble_base.push(usuarioInmuebleBase.id);
+                    usuarioInmuebleBase.tipo="favorito";
+                    await usuarioInmuebleBase.save();
+                }
+                await usuario.save();
                 return "Se registro correctamente";
             }catch(error){
                 console.log(error);
             }
         },
         actualizarFechaInmuebleBase: async(_,{id,fecha})=>{
-            await UsuarioInmuebleBase.findOneAndUpdate({_id:id},{fecha_inicio:fecha});
-            return "Se guardaron los cambios";
+            //await UsuarioInmuebleBase.findOneAndUpdate({_id:id},{fecha_inicio:fecha});
+           var fec=new Date();
+           var ff=fec.getDate();
+           console.log(ff);
+            return fec.toISOString();
         },
         modificarEstadoInmuebleVendedor: async (_,{id_inmueble,tipo_accion})=>{
             let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
@@ -873,7 +1094,7 @@ const resolvers={
                 return bitacoraInmueble.actividad;
             }else if(tipo_accion=="Vendido y reportar"){
                 //inmueble.autorizacion="Pendiente";
-                inmueble.estado_inmueble="Vendido";
+                inmueble.estado_negociacion="Vendido";
                 inmueble.ultima_modificacion=fecha;
                 await inmueble.save();
                 let solicitudesAdministradores=SolicitudesAdministradores();
@@ -903,6 +1124,7 @@ const resolvers={
         },
         responderSolicitudAdministrador: async (_,{id,id_respondedor,id_comprador,id_solicitud,input})=>{
             let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
+            
             var fecha=new Date();
             if(input.tipo_solicitud=="Dar Alta"){
                 if(administradorInmueble.usuario_respondedor==null){
@@ -933,7 +1155,7 @@ const resolvers={
                 await administradorInmueble.save();
                 if(input.tipo_solicitud=="Dar alta"){
                     if(input.respuesta=="Confirmado"){
-                        inmueble.estado_inmueble="Sin negociar";
+                        inmueble.estado_negociacion="Sin negociar";
                         inmueble.fecha_publicacion=fecha;
                         inmueble.ultima_modificacion=fecha;
                         inmueble.autorizacion="Activo";
@@ -962,7 +1184,7 @@ const resolvers={
                     }
                 }else if(input.tipo_solicitud=="Vendido"){
                     if(input.respuesta=="Confirmado"){
-                        inmueble.estado_inmueble="Vendido";
+                        inmueble.estado_negociacion="Vendido";
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                         const solicitudesUsuarios=SolicitudesUsuarios();
@@ -973,7 +1195,7 @@ const resolvers={
                         solicitudesUsuarios.tipo_solicitud="Calificar";
                         await solicitudesUsuarios.save();
                     }else{
-                        inmueble.estado_inmueble="Negociaciones avanzadas";
+                        inmueble.estado_negociacion="Negociaciones avanzadas";
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                     }
@@ -982,7 +1204,7 @@ const resolvers={
             }else{
                 if(input.tipo_solicitud=="Dar alta"){
                     if(input.respuesta=="Confirmado"){
-                        inmueble.estado_inmueble="Sin negociar";
+                        inmueble.estado_negociacion="Sin negociar";
                         inmueble.fecha_publicacion=fecha;
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
@@ -999,7 +1221,7 @@ const resolvers={
                     }
                 }else if(input.tipo_solicitud=="Vendido"){
                     if(input.respuesta=="Confirmado"){
-                        inmueble.estado_inmueble="Vendido";
+                        inmueble.estado_negociacion="Vendido";
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                         const solicitudesUsuarios=SolicitudesUsuarios();
@@ -1011,7 +1233,7 @@ const resolvers={
                         console.log(solicitudesUsuarios.id);
                         await solicitudesUsuarios.save();
                     }else{
-                        inmueble.estado_inmueble="Negociaciones avanzadas";
+                        inmueble.estado_negociacion="Negociaciones avanzadas";
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                     }
@@ -1043,9 +1265,9 @@ const resolvers={
             
             
         },
-        registrarInmuebleMasivo: async (_,{id})=>{
-            var min=3;
-            var max=6;
+        registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
+            var min=30;
+            var max=32;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let url_imagenes=[
@@ -1096,17 +1318,21 @@ const resolvers={
                         "Loredo","Peredo","Abastoflor","Paco","Rodriguez","Dominguez",
                         "Fuentes","Gallardo","Guzman","Suarez","Vega","Bejarano","Palacios",
                         "Garcilazo","Bohorquez","Branco","Arancibia","Puma","Nogales"];
-            let estado_inmueble=["Sin negociar"];
+            let estado_negociacion=["Sin negociar"];
             //let estado_inmueble=["Sin negociar","Sin negociar","Sin negociar","Negociación inicial","Negociación avanzada","Vendido"];
-            let ciudades=["La Paz","Oruro","Potosi","Cochabamba","Tarija","Sucre","Santa Cruz","Beni","Pando"];
+            //let ciudades=["La Paz","Oruro","Potosi","Cochabamba","Tarija","Sucre","Santa Cruz","Beni","Pando"];
+            let ciudades=["Sucre"];
             let zona=["Zona 1","Zona 2","Zona 3","Zona 4","Zona 5","Zona 6","Zona 7","Zona 8","Zona ","Zona 10"];
-            let tipo_inmueble=["Casa","Departamento","Terreno"];
-            let tipo_contrato=["Venta","Alquiler","Anticrético"];
+            //let tipo_inmueble=["Casa","Departamento","Terreno"];
+            let tipo_inmueble=["Casa"];
+            //let tipo_contrato=["Venta","Alquiler","Anticrético"];
+            let tipo_contrato=["Venta",];
             let imagenes_2D=["","www.linkimagenes"];
             let video_2D=["","www.linkvideo"];
             let tour_virtual=["","www.linktourvirtual"];
             let video_tour=["","www.linkvideotour"];
             let valores_booleanos=[true,false];
+            let categorias=["Orgánicos","Pro","Pro360"];
             const cantidad_inmuebles=Math.floor(Math.random() * (max - min)) + min;
             //const cantidad_inmuebles=600;
             var i=0;
@@ -1119,34 +1345,22 @@ const resolvers={
                 }
                 const inmueble=Inmueble();
                 inmueble.indice=secuencia.indice_inmuebles;
+                /*
                 var numero_aleatorio=Math.floor(Math.random() * (nombres.length - 0)) + 0;
                 inmueble.nombre_propietario=nombres[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (apellidos.length - 0)) + 0;
-                inmueble.nombre_propietario=inmueble.nombre_propietario+" "+apellidos[numero_aleatorio];
+                inmueble.nombre_propietario=inmueble.nombre_propietario+" "+apellidos[numero_aleatorio];*/
                 numero_aleatorio=Math.floor(Math.random() * (ciudades.length - 0)) + 0;
                 inmueble.ciudad=ciudades[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (zona.length - 0)) + 0;
-                inmueble.zona=zona[numero_aleatorio];
+                
                 numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 0;
                 inmueble.direccion="Dirección "+numero_aleatorio;
-                numero_aleatorio=Math.floor(Math.random() * (400 - 0)) + 20;
-                inmueble.precio=numero_aleatorio*1000;
                 numero_aleatorio=Math.floor(Math.random() * (tipo_inmueble.length  - 0)) + 0;
                 inmueble.tipo_inmueble=tipo_inmueble[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (estado_inmueble.length  - 0)) + 0;
-                inmueble.estado_inmueble=estado_inmueble[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
-                inmueble.superficie_terreno=inmueble.tipo_inmueble=="Departamento"?numero_aleatorio*10:numero_aleatorio*10;
-                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
-                inmueble.superficie_construccion=inmueble.tipo_inmueble=="Departamento"?numero_aleatorio*10:0;
-                if(inmueble.tipo_inmueble=="Casa"){
-                    var num_aux=numero_aleatorio;
-                    numero_aleatorio=Math.floor(Math.random() * (num_aux - 0)) + 1;
-                    inmueble.superficie_construccion=numero_aleatorio*10;
-                }
                 numero_aleatorio=Math.floor(Math.random() * (tipo_contrato.length  - 0)) + 0;
                 inmueble.tipo_contrato=tipo_contrato[numero_aleatorio];
-                //----------------cambiar precio para alquiler--------------------------
+                numero_aleatorio=Math.floor(Math.random() * (50  - 0)) + 10;
+                inmueble.precio=numero_aleatorio*10000;
                 numero_aleatorio=Math.floor(Math.random() * (50  - 0)) + 10;
                 inmueble.precio=inmueble.tipo_contrato=="Alquiler"?numero_aleatorio*100:inmueble.precio;
                 inmueble.historial_precios.push(inmueble.precio);
@@ -1161,31 +1375,63 @@ const resolvers={
                         inmueble.historial_precios.push(inmueble.precio-numero_aleatorio);
                     }
                 }
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.documentos_dia=valores_booleanos[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.construccion_estrenar=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.incluye_credito=valores_booleanos[numero_aleatorio];
-                inmueble.sin_construir=inmueble.tipo_inmueble=="Terreno"?true:false;
-                numero_aleatorio=Math.floor(Math.random() * (20  - 0)) + 0;
-                inmueble.tiempo_construccion=numero_aleatorio;
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.inmueble_compartido=valores_booleanos[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (4  - 0)) + 2;
-                inmueble.numero_duenios=inmueble.inmueble_compartido?numero_aleatorio:1;
-                numero_aleatorio=Math.floor(Math.random() * (7  - 0)) + 1;
-                inmueble.numero_pisos=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.sin_hipoteca=valores_booleanos[numero_aleatorio];
-                
+                numero_aleatorio=Math.floor(Math.random() * (estado_negociacion.length  - 0)) + 0;
+                inmueble.estado_negociacion=estado_negociacion[numero_aleatorio];
+                //----------------Generales---------------------
+                numero_aleatorio=Math.floor(Math.random() * (zona.length - 0)) + 0;
+                inmueble.zona=zona[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (11  - 0)) + 1;
                 inmueble.coordenadas.push(Math.round((latitud-1/numero_aleatorio)*10000)/10000);
                 numero_aleatorio=Math.floor(Math.random() * (80  - 0)) + 1;
                 inmueble.coordenadas.push(Math.round((longitud-1/numero_aleatorio)*10000)/10000);
-                inmueble.creador=id;
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.mascotas_permitidas=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.sin_hipoteca=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.construccion_estrenar=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.materiales_primera=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
+                inmueble.superficie_terreno=inmueble.tipo_inmueble=="Departamento"?numero_aleatorio*10:numero_aleatorio*10;
+                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 1;
+                inmueble.superficie_construccion=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio*10;
                 
-                
+                numero_aleatorio=Math.floor(Math.random() * (25 - 0)) + 5;
+                inmueble.tamanio_frente=numero_aleatorio;
+                numero_aleatorio=Math.floor(Math.random() * (20  - 0)) + 0;
+                inmueble.antiguedad_construccion=tipo_inmueble=="Terreno"?0:numero_aleatorio;
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.proyecto_preventa=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.inmueble_compartido=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (4  - 0)) + 2;
+                inmueble.numero_duenios=inmueble.inmueble_compartido?numero_aleatorio:1;
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.servicios_basicos=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.gas_domiciliario=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.wifi=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.medidor_independiente=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.termotanque=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.calle_asfaltada=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.transporte=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.preparado_discapacidad=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.papeles_orden=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.habilitado_credito=valores_booleanos[numero_aleatorio];
+                //----------------características internas------------------------
+                numero_aleatorio=Math.floor(Math.random() * (7  - 0)) + 1;
+                inmueble.plantas=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
+                numero_aleatorio=Math.floor(Math.random() * (7  - 0)) + 1;
+                inmueble.ambientes=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (5 - 0)) + 1;
                 inmueble.numero_dormitorios=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (5  - 0)) + 1;
@@ -1193,57 +1439,71 @@ const resolvers={
                 numero_aleatorio=Math.floor(Math.random() * (5  - 0)) + 1;
                 inmueble.numero_garaje=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.mascotas_permitidas=valores_booleanos[numero_aleatorio];
+                inmueble.amoblado=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.lavanderia=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.zona_lavadora=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                inmueble.cuarto_lavado=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.churrasquero=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.azotea=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.condominio_privado=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.cancha=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.piscina=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.lavanderia=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.sauna=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.tienda=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                inmueble.jacuzzi=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.estudio=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.jardin=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.balcon=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                inmueble.porton_electrico=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.aire_acondicionado=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.calefaccion=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.ascensor=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.deposito=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.sotano=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.deposito=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                inmueble.balcon=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.tienda=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.amurallado_terreno=inmueble.tipo_inmueble=="Terreno"?valores_booleanos[numero_aleatorio]:false;
+                //----------------Comunidad-------------------------------------------------------
 
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.iglesia=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.parque=valores_booleanos[numero_aleatorio];
+                inmueble.parque_infantil=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.deportiva=valores_booleanos[numero_aleatorio];
+                inmueble.escuela=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.policial=valores_booleanos[numero_aleatorio];
+                inmueble.universidad=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.residencial=valores_booleanos[numero_aleatorio];
+                inmueble.plazuela=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.estudiantil=valores_booleanos[numero_aleatorio];
+                inmueble.modulo_policial=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.comercial=valores_booleanos[numero_aleatorio];
-
+                inmueble.sauna_piscina_publica=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.verificados=valores_booleanos[numero_aleatorio];
+                inmueble.gym_publico=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.bienes_adjudicados=valores_booleanos[numero_aleatorio];
+                inmueble.centro_deportivo=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.puesto_salud=valores_booleanos[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                inmueble.zona_comercial=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.remates_judiciales=valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (imagenes_2D.length  - 0)) + 0;
@@ -1264,6 +1524,7 @@ const resolvers={
                 inmueble.video_tour_360_link=inmueble.video_tour_360_link==""?"":inmueble.video_tour_360_link+numero_aleatorio+".com";
                 numero_aleatorio=Math.floor(Math.random() * (50  - 0)) + 0;
                 var fecha=new Date();
+                
                 fecha.setDate(fecha.getDate()-20);
                 numero_aleatorio=Math.floor(Math.random() * (50  - 0)) + 0;
                 fecha.setDate(fecha.getDate()+numero_aleatorio);
@@ -1276,9 +1537,9 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.estado_inmueble="Activo";
-                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
-                inmueble.promocionado=valores_booleanos[numero_aleatorio];
+                inmueble.autorizacion="Activo";
+                numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
+                inmueble.categoria=categorias[numero_aleatorio];
 
                 const inmuebleImagenes=InmuebleImagenes();
                 let imagenes=[];
@@ -1341,13 +1602,15 @@ const resolvers={
                 inmuebleImagenes.url_imagenes_dependencias=imagenes;
                 inmuebleImagenes.inmueble=inmueble.id;
                 inmueble.imagenes=inmuebleImagenes.id;
+                inmueble.creador=id_creador;
+                inmueble.propietario=id_propietario;
                 //console.log(inmueble);
                 //console.log(inmuebleInternas);
                 //console.log(inmuebleComunidad);
                 //console.log(inmuebleOtros);
                 secuencia.indice_inmuebles=secuencia.indice_inmuebles+1;
                 let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=id;
+                bitacoraInmueble.usuario=id_creador;
                 bitacoraInmueble.inmueble=inmueble.id;
                 bitacoraInmueble.actividad="Envío de solicitud para dar de alta el inmueble creado";
                 await bitacoraInmueble.save();
@@ -1359,7 +1622,7 @@ const resolvers={
                 administradorInmueble.link_respaldo_solicitud="";
                 administradorInmueble.link_respaldo_respuesta="";
                 administradorInmueble.inmueble=inmueble.id;
-                administradorInmueble.usuario_solicitante=id;
+                administradorInmueble.usuario_solicitante=id_creador;
                 await administradorInmueble.save();
                 let solicitudesAdministradores=await SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
@@ -1370,7 +1633,7 @@ const resolvers={
                 solicitudesAdministradores.link_respaldo_solicitud="";
                 solicitudesAdministradores.link_respaldo_respuesta="";
                 solicitudesAdministradores.inmueble=inmueble.id;
-                solicitudesAdministradores.usuario_solicitante=id;
+                solicitudesAdministradores.usuario_solicitante=id_creador;
                 await solicitudesAdministradores.save();
 
                /*
@@ -1407,7 +1670,167 @@ const resolvers={
             solicitudesAdministradores.usuario_solicitante=id_usuario;
             await solicitudesAdministradores.save();
         },*/
+        registrarCuentaBanco: async (_,{input})=>{
+            let cuentasBanco=new CuentasBanco(input);
+            await cuentasBanco.save();
+            return cuentasBanco;
+        },
+        registrarSolicitudAdministradorAgente: async(_,{input})=>{
+            let administradorAgente=new AdministradorAgente(input);
+            administradorAgente.save();
+            return "Se registró correctamente";
+        },
+        registrarAgentePago: async(_,{input})=>{
+            let agentePago=new AgentePago(input);
+            var fecha=new Date();
+            agentePago.fecha_solicitud=fecha;
+            if(agentePago.medio_pago=="Tarjeta"){
+                agentePago.fecha_inicio=fecha;
+                agentePago.autorizacion="Aprobado";
+                agentePago.fecha_respuesta=fecha;
+                agentePago.respuesta_entregada=true;
+                agentePago.activo=true;
+            }
+            await agentePago.save();
+            let usuario=await Usuario.findById(agentePago.agente);
+            
+            usuario.agente_pagos.push(agentePago.id);
+            await usuario.save();
+            
+            var id=agentePago.id;
+            agentePago=await AgentePago.findById(id)
+                .populate("cuenta_banco")
+                .populate("agente")
+                .populate("administrador");
+            return agentePago;
+        },
+        responderAgentePago: async(_,{id,id_administrador,autorizacion,observaciones})=>{
+            let agentePago=await AgentePago.findById(id);
+            var fecha=new Date();
+            console.log(fecha);
+            if(agentePago.administrador==null){
+                if(autorizacion=="Rechazado"){
+                    agentePago.autorizacion="Rechazado";
+                    agentePago.observaciones=observaciones;
+                    agentePago.administrador=id_administrador;
+                    agentePago.fecha_respuesta=fecha;
+                }else{
+                    agentePago.autorizacion=autorizacion;
+                    agentePago.administrador=id_administrador;
+                    agentePago.fecha_respuesta=fecha;
+                    var fecha_inicio=Date.parse(agentePago.fecha_solicitud.toString());
+                    var fechad=new Date(agentePago.fecha_solicitud);
+                    console.log(fechad);
+                    fechad.setDate(fechad.getDate()+2);
+                    agentePago.fecha_inicio=fechad;
+                }
+            }else{
+                throw new Error ('La petición ya fue respondida por otro administrador');
+            }
+            await agentePago.save();
+            agentePago=await AgentePago.findById(id)
+                .populate("cuenta_banco")
+                .populate("agente")
+                .populate("administrador");
+            return agentePago;
+        },
+        registrarPlanesPagoAgente: async(_,{input})=>{
+            let emailStatus="OK";
+            let planesPagoAgente=new PlanesPagoAgente(input);
+            planesPagoAgente.save();
+            //try{
+                let info = await transporter.sendMail({
+                    from: '"Prueba envio email" <rhyno12091991@gmail.com>', // sender address
+                    //to: "elzhar.80.iact@gmail.com", // list of receivers
+                    to: "shirleyjhasminacruztrujillo@gmail.com", 
+                    subject: "Probando app", // Subject line
+                    text: "456878", // plain text body
+                    html: "<b>45235</b>", // html body
+                  });
+                console.log(info);
+            /*}catch(error){
+                emailStatus=error;
+                console.log(error);
+            }*/
+            return "Se registró correctamente";
+        },
+        registrarEmailClaveVerificaciones: async(_,{input,actividad})=>{
+            let usuario=await Usuario.find({email:input.email});
+            if(usuario){
+                if(actividad=="Registrar"){
+                    throw new Error("El email ya está registrado");
+                }
+            }else{
+                if(actividad=="Recuperar"){
+                    throw new Error("El email no está registrado");
+                }
+            }
+            
+            await EmailClaveVerificaciones.findOneAndDelete({email : input.email});
+            let emailClaveVerificaciones=new EmailClaveVerificaciones(input);
+            var fecha=new Date(emailClaveVerificaciones.fecha_creacion);
+            fecha.setMinutes(fecha.getMinutes()+30);
+            //console.log(emailClaveVerificaciones.fecha_creacion);
+            //console.log(fecha);
+            emailClaveVerificaciones.fecha_vencimiento=fecha;
+            var clave=Math.floor(Math.random() * (999999  - 100000)) + 100000;
+            emailClaveVerificaciones.clave=clave;
+            await emailClaveVerificaciones.save();
+            let info = await transporter.sendMail({
+                from: '"Verificación de email" <rhyno12091991@gmail.com>', // sender address
+                //to: "elzhar.80.iact@gmail.com", // list of receivers
+                to: input.email, 
+                subject: "InmobiliaAPP", // Subject line
+                text: "456878", // plain text body
+                html: "<b>Clave de verificación: "+clave+"</b>", // html body
+            });
+            console.log(info);
+            return emailClaveVerificaciones;
+        },
+        obtenerEmailClaveVerificaciones: async(_,{email,clave})=>{
+            var filter1={};
+            filter1.email=email;
+            filter1.clave=clave;
+            let emailClaveVerificaciones=await EmailClaveVerificaciones.findOne(filter1);
+            //console.log(email);
+            if(emailClaveVerificaciones){
+                let usuario=await Usuario.findOne({email:email});
+                emailClaveVerificaciones.usuario=usuario;
+            }
+            return emailClaveVerificaciones;
+        },
+        registrarVersionesAPP: async(_,{input})=>{
+            let versionesAPP=new VersionesAPP(input);
+            versionesAPP.save();
+            return "Se registró correctamente";     
+        },
+        crearZona: async(_,{input})=>{
+            let zona=new Zona(input);
+            zona.save();
+            return zona;
+        },
+        modificarZona: async(_,{id,input})=>{
+            let zona=await Zona.findById(id);
+            zona.nombre_zona=input.nombre_zona;
+            zona.ciudad=input.ciudad;
+            zona.coordenadas=input.coordenadas;
+            zona.save();
+            console.log(zona.id);
+            return zona;
+        },
+        eliminarZona: async(_,{id})=>{
+            await Zona.findByIdAndDelete(id);
+            return "Se eliminó la zona";
+        },
+        buscarUsuarioEmail: async(_,{email})=>{
+            const usuario=await Usuario.findOne({email:email});
+            if(!usuario){
+                throw new Error("No se encontró al usuario");
+            }
+            return usuario;
+        },
     }
 }
+
 module.exports=resolvers;
 //module.exports = pubsub;

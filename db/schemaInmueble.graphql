@@ -5,60 +5,81 @@ extend type Query {
     obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
     obtenerMisInmueblesVenta(id: ID): [Inmueble]
+    obtenerZonas(ciudad:String):[Zona]
 }
 scalar Date
 
 type Inmueble{
     id: ID
     indice: Int
-    nombre_propietario: String
+    propietario: Usuario
     ciudad: String
-    zona: String
     direccion: String
     precio: Int
+    historial_precios: [Int]
     tipo_inmueble: String
-    estado_inmueble:String
+    tipo_contrato: String
+    estado_negociacion:String
+    zona: String
+    coordenadas: [Float]
+    mascotas_permitidas: Boolean
+    sin_hipoteca: Boolean
+    construccion_estrenar: Boolean
+    materiales_primera: Boolean
     superficie_terreno: Int
     superficie_construccion: Int
-    tipo_contrato: String
-    documentos_dia: Boolean
-    construccion_estrenar: Boolean
-    incluye_credito: Boolean
-    sin_construir: Boolean
-    tiempo_construccion: Int
+    tamanio_frente: Int
+    antiguedad_construccion: Int
+    proyecto_preventa: Boolean
     inmueble_compartido: Boolean
     numero_duenios: Int
-    numero_pisos: Int
-    sin_hipoteca: Boolean
-    historial_precios: [Int]
-    coordenadas: [Float]
+    servicios_basicos: Boolean
+    gas_domiciliario: Boolean
+    wifi: Boolean
+    medidor_independiente:Boolean
+    termotanque:Boolean
+    calle_asfaltada:Boolean
+    transporte: Boolean
+    preparado_discapacidad:Boolean
+    papeles_orden:Boolean
+    habilitado_credito: Boolean
+    plantas: Int
+    ambientes: Int
     numero_dormitorios: Int
     numero_banios: Int
     numero_garaje: Int
-    mascotas_permitidas: Boolean
+    amoblado: Boolean
     lavanderia: Boolean
-    zona_lavadora: Boolean
+    cuarto_lavado: Boolean
     churrasquero: Boolean
     azotea: Boolean
+    condominio_privado: Boolean
     cancha: Boolean
     piscina: Boolean
     sauna: Boolean
-    tienda: Boolean
+    jacuzzi: Boolean
     estudio: Boolean
     jardin: Boolean
-    balcon: Boolean
+    porton_electrico: Boolean
+    aire_acondicionado: Boolean
+    calefaccion: Boolean
     ascensor: Boolean
-    sotano: Boolean
     deposito: Boolean
+    sotano: Boolean
+    balcon: Boolean
+    tienda: Boolean
+    amurallado_terreno: Boolean
     iglesia: Boolean
-    parque: Boolean
-    deportiva: Boolean
-    policial: Boolean
-    residencial: Boolean
-    estudiantil: Boolean
-    comercial: Boolean
-    verificados: Boolean
-    bienes_adjudicados: Boolean
+    parque_infantil: Boolean
+    escuela: Boolean
+    universidad: Boolean
+    plazuela: Boolean
+    modulo_policial: Boolean
+    sauna_piscina_publica: Boolean
+    gym_publico:Boolean
+    centro_deportivo:Boolean
+    puesto_salud:Boolean
+    zona_comercial: Boolean
     remates_judiciales: Boolean
     imagenes_2D_link: String
     video_2D_link: String
@@ -69,7 +90,7 @@ type Inmueble{
     autorizacion: String
     ultima_modificacion: Date
     calificacion:Int
-    promocionado:Boolean
+    categoria:String
     creador:Usuario
     usuarios_favorito: [UsuarioFavorito]
     imagenes:InmuebleImagenes
@@ -115,60 +136,78 @@ input ObtenerInmuebleNuevoInput{
     precio_max: Int
 }
 input InmuebleInput{
-    nombre_propietario: String
     ciudad: String
-    zona: String
     direccion: String
     precio: Int
+    historial_precios: [Int]
     tipo_inmueble: String
-    estado_inmueble: String
-    autorizacion: String
+    tipo_contrato: String
+    estado_negociacion:String
+    zona: String
+    coordenadas: [Float]
+    mascotas_permitidas: Boolean
+    sin_hipoteca: Boolean
+    construccion_estrenar: Boolean
+    materiales_primera: Boolean
     superficie_terreno: Int
     superficie_construccion: Int
-    tipo_contrato: String
-    documentos_dia: Boolean
-    construccion_estrenar: Boolean
-    incluye_credito: Boolean
-    sin_construir: Boolean
-    tiempo_construccion: Int
+    tamanio_frente: Int
+    antiguedad_construccion: Int
+    proyecto_preventa: Boolean
     inmueble_compartido: Boolean
     numero_duenios: Int
-    numero_pisos: Int
-    sin_hipoteca: Boolean
-    coordenadas: [Float]
+    servicios_basicos: Boolean
+    gas_domiciliario: Boolean
+    wifi: Boolean
+    medidor_independiente:Boolean
+    termotanque:Boolean
+    calle_asfaltada:Boolean
+    transporte: Boolean
+    preparado_discapacidad:Boolean
+    papeles_orden:Boolean
+    habilitado_credito: Boolean
+    plantas: Int
+    ambientes: Int
     numero_dormitorios: Int
     numero_banios: Int
     numero_garaje: Int
-    mascotas_permitidas: Boolean
+    amoblado: Boolean
     lavanderia: Boolean
-    zona_lavadora: Boolean
+    cuarto_lavado: Boolean
     churrasquero: Boolean
     azotea: Boolean
+    condominio_privado: Boolean
     cancha: Boolean
     piscina: Boolean
     sauna: Boolean
-    tienda: Boolean
+    jacuzzi: Boolean
     estudio: Boolean
     jardin: Boolean
-    balcon: Boolean
+    porton_electrico: Boolean
+    aire_acondicionado: Boolean
+    calefaccion: Boolean
     ascensor: Boolean
-    sotano: Boolean
     deposito: Boolean
+    sotano: Boolean
+    balcon: Boolean
+    tienda: Boolean
+    amurallado_terreno: Boolean
     iglesia: Boolean
-    parque: Boolean
-    deportiva: Boolean
-    policial: Boolean
-    residencial: Boolean
-    estudiantil: Boolean
-    comercial: Boolean
-    verificados: Boolean
-    bienes_adjudicados: Boolean
+    parque_infantil: Boolean
+    escuela: Boolean
+    universidad: Boolean
+    plazuela: Boolean
+    modulo_policial: Boolean
+    sauna_piscina_publica: Boolean
+    gym_publico:Boolean
+    centro_deportivo:Boolean
+    puesto_salud:Boolean
+    zona_comercial: Boolean
     remates_judiciales: Boolean
     imagenes_2D_link: String
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
-    
 }
 
 type InmuebleFavorito{
@@ -187,6 +226,7 @@ input InmuebleFavoritoInput{
 }
 type UsuarioInmuebleBase{
     id: ID
+    tipo:String
     dormitorios_min: Int
     dormitorios_max: Int
     banios_min: Int
@@ -197,8 +237,8 @@ type UsuarioInmuebleBase{
     superficie_terreno_max: Int
     superficie_construccion_min: Int
     superficie_construccion_max: Int
-    tiempo_construccion_min: Int
-    tiempo_construccion_max: Int
+    antiguedad_construccion_min: Int
+    antiguedad_construccion_max: Int
     precio_min: Int
     precio_max: Int
     fecha_inicio: Date
@@ -214,8 +254,8 @@ input UsuarioInmuebleBaseInput{
     superficie_terreno_max: Int
     superficie_construccion_min: Int
     superficie_construccion_max: Int
-    tiempo_construccion_min: Int
-    tiempo_construccion_max: Int
+    antiguedad_construccion_min: Int
+    antiguedad_construccion_max: Int
     precio_min: Int
     precio_max: Int
 }
@@ -279,14 +319,28 @@ input FiltroSimpleInmuebleInput{
     ciudad: String
     id_usuario: String
 }
+input ZonaInput{
+    ciudad:String
+    nombre_zona:String
+    coordenadas:[Float]
+}
+type Zona{
+    id:ID
+    ciudad:String
+    nombre_zona:String
+    coordenadas:[Float]
+}
 extend type Mutation {
     registrarInmueble(id: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput) : String
     actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput) : String
     actualizarPrecioInmueble(id: ID!, precio: Int) : String
     eliminarInmueble(id: ID!) : String
-    registrarInmuebleMasivo(id: ID!): String
-    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput, input2: UsuarioInmuebleBaseInput): String
+    registrarInmuebleMasivo(id_creador: ID!,id_propietario: ID!): String
+    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput, input_visto: UsuarioInmuebleBaseInput,input_doble_visto:UsuarioInmuebleBaseInput,input_favorito:UsuarioInmuebleBaseInput): String
     actualizarFechaInmuebleBase(id: ID,fecha: String):String
+    crearZona(input:ZonaInput):Zona
+    modificarZona(id:ID,input:ZonaInput):Zona
+    eliminarZona(id:ID):String
 }
 type Subscription {
     inmuebleAdded: Inmueble

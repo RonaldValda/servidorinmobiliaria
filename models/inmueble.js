@@ -4,18 +4,11 @@ const InmuebleSchema = new mongoose.Schema({
     indice:{
         type: Number
     },
-    nombre_propietario: {
-        type: String,
-        trim: true
-    },
     ciudad: {
         type: String,
         trim: true
     },
-    zona: {
-        type: String,
-        trim: true
-    },
+    
     direccion:{
         type: String,
         trim: true
@@ -23,35 +16,53 @@ const InmuebleSchema = new mongoose.Schema({
     precio: {
         type: Number,
     },
+    historial_precios:{
+        type: Array
+    },
     tipo_inmueble: {
         type: String,
     },
-    estado_inmueble:{
+    tipo_contrato: {
+        type: String
+    },
+    estado_negociacion:{
         type:String,
     },
+    //Generales
+    zona: {
+        type: String,
+        trim: true
+    },
+    coordenadas:{
+        type: Array
+    },
+    mascotas_permitidas: {
+        type: Boolean
+    },
+    sin_hipoteca:{
+        type: Boolean
+    },
+    construccion_estrenar: {
+        type: Boolean
+    },
+    materiales_primera:{
+        type:Boolean
+    },
+    //-----------Generales más--------------
     superficie_terreno: {
         type: Number
     },
     superficie_construccion:{
         type: Number
     },
-    tipo_contrato: {
-        type: String
-    },
-    documentos_dia: {
-        type: Boolean
-    },
-    construccion_estrenar: {
-        type: Boolean
-    },
-    incluye_credito: {
-        type: Boolean
-    },
-    sin_construir: {
-        type: Boolean
-    },
-    tiempo_construccion:{
+    tamanio_frente:{
         type: Number
+    },
+    antiguedad_construccion:{
+        type: Number
+    },
+    proyecto_preventa: {
+        type: Boolean
     },
     inmueble_compartido:{
         type: Boolean
@@ -59,19 +70,44 @@ const InmuebleSchema = new mongoose.Schema({
     numero_duenios:{
         type: Number
     },
-    numero_pisos:{
-        type: Number
+    servicios_basicos:{
+        type:Boolean
     },
-    sin_hipoteca:{
+    gas_domiciliario:{
+        type:Boolean
+    },
+    wifi:{
+        type:Boolean
+    },
+    medidor_independiente:{
+        type:Boolean
+    },
+    termotanque:{
+        type:Boolean
+    },
+    calle_asfaltada:{
+        type:Boolean
+    },
+    transporte:{
+        type:Boolean
+    },
+    preparado_discapacidad:{
+        type:Boolean
+    },
+    papeles_orden: {
         type: Boolean
     },
-    historial_precios:{
-        type: Array
+    habilitado_credito: {
+        type: Boolean
     },
-    coordenadas:{
-        type: Array
-    },
+    
     //caracteristicas internas
+    plantas:{
+        type: Number
+    },
+    ambientes:{
+        type: Number
+    },
     numero_dormitorios:{
         type: Number,
     },
@@ -81,19 +117,22 @@ const InmuebleSchema = new mongoose.Schema({
     numero_garaje: {
         type: Number
     },
-    mascotas_permitidas: {
+    amoblado:{
         type: Boolean
     },
     lavanderia: {
         type: Boolean
     },
-    zona_lavadora: {
+    cuarto_lavado: {
         type: Boolean
     },
     churrasquero: {
         type: Boolean
     },
     azotea: {
+        type: Boolean
+    },
+    condominio_privado: {
         type: Boolean
     },
     cancha: {
@@ -105,8 +144,8 @@ const InmuebleSchema = new mongoose.Schema({
     sauna: {
         type: Boolean
     },
-    tienda: {
-        type: Boolean
+    jacuzzi:{
+        type:Boolean
     },
     estudio: {
         type: Boolean
@@ -114,47 +153,68 @@ const InmuebleSchema = new mongoose.Schema({
     jardin: {
         type: Boolean
     },
-    balcon: {
-        type: Boolean
+    porton_electrico:{
+        type:Boolean
+    },
+    aire_acondicionado:{
+        type:Boolean
+    },
+    calefaccion:{
+        type:Boolean
     },
     ascensor: {
+        type: Boolean
+    },
+    deposito: {
         type: Boolean
     },
     sotano: {
         type: Boolean
     },
-    deposito: {
+    balcon: {
+        type: Boolean
+    },
+    tienda: {
+        type: Boolean
+    },
+    amurallado_terreno:{
         type: Boolean
     },
     //comunidad
     iglesia: {
         type: Boolean
     },
-    parque: {
+    parque_infantil: {
         type: Boolean
     },
-    deportiva: {
+    escuela:{
         type: Boolean
     },
-    policial: {
+    universidad:{
         type: Boolean
     },
-    residencial: {
+    plazuela:{
         type: Boolean
     },
-    estudiantil: {
+    modulo_policial: {
         type: Boolean
     },
-    comercial: {
+    sauna_piscina_publica:{
+        type:Boolean
+    },
+    gym_publico:{
+        type:Boolean
+    },
+    centro_deportivo:{
+        type:Boolean
+    },
+    puesto_salud:{
+        type:Boolean
+    },
+    zona_comercial: {
         type: Boolean
     },
     //otros
-    verificados:{
-        type: Boolean
-    },
-    bienes_adjudicados:{
-        type: Boolean
-    },
     remates_judiciales:{
         type: Boolean
     },
@@ -175,10 +235,15 @@ const InmuebleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'InmuebleImagenes'
     },
+    propietario:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuario'
+    },
     creador: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
     },
+    
     usuarios_favorito: [{ 
         type:mongoose.Schema.Types.ObjectId,ref:'InmuebleFavorito',default:{}}
     ],
@@ -202,9 +267,9 @@ const InmuebleSchema = new mongoose.Schema({
         type: Number,
         Default:0
     },
-    promocionado:{
-        type: Boolean,
-        Default: false
+    categoria:{
+        type: String,
+        default: "Orgánico"
     }
 });
 module.exports = mongoose.model('Inmueble', InmuebleSchema);
