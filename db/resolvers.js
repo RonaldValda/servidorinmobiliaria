@@ -21,6 +21,8 @@ const transporter=require("../models/mailer");
 const EmailClaveVerificaciones=require('../models/emailClaveVerificaciones');
 const VersionesAPP=require('../models/versionesAPP');
 const Zona=require('../models/zona');
+const InmuebleComprobante = require('../models/inmuebleComprobante'); 
+const RegistroAds = require('../models/registroAds'); 
 require('dotenv').config({path: 'variables.env'})
 //const { PubSub } = require('graphql-subscriptions')
 
@@ -319,6 +321,9 @@ const resolvers={
                 path:"usuarios_favorito",match:filter2});*/
             await inmuebles.find({}).populate("creador",{})
             .populate({path:"propietario"})
+            .populate({path:"comprobante",
+                populate:{path:"cuenta_banco"}
+            })
             .populate("imagenes",{})
             .populate({
                 path:"usuarios_favorito",match:filter2,
@@ -361,9 +366,18 @@ const resolvers={
                 .populate({path:"usuario_solicitante"})
                 .populate({path:"usuario_respondedor"});*/
                 await administradorImmueble.find({}).populate({
-                    path:"inmueble",populate:{path:"creador"}})
-                    .populate({path:"propietario"})
-                    .populate({path:"inmueble",populate:{path:"imagenes"}})
+                    path:"inmueble",populate:{path:"creador"}}).
+                    populate({
+                        path: "inmueble",populate:{path:"imagenes"}
+                    })
+                    .populate({
+                        path: "inmueble",populate:{path:"comprobante",
+                        populate:{path:"cuenta_banco"}    
+                    }
+                    })
+                    .populate({
+                        path:"inmueble",populate:{path:"propietario"}
+                    })
                     .populate({path:"usuario_solicitante"})
                     .populate({path:"usuario_respondedor"});
             
@@ -482,6 +496,10 @@ const resolvers={
         obtenerZonas: async(_,{ciudad})=>{
             let zonas=await Zona.find({ciudad:ciudad});
             return zonas;     
+        },
+        obtener: async(_)=>{
+            let registroAds=await RegistroAds.find({});
+            return registroAds;     
         },
 
     },
@@ -720,6 +738,25 @@ const resolvers={
 
             return "Tarea eliminada";
         },
+        RegistrarAd: async (_,{id_ad,tipo_ad})=>{
+            try{
+                const registroAds = RegistroAds();
+                registroAds.id_ad=id_ad;
+                registroAds.tipo_ad=tipo_ad;
+                await registroAds.save();
+                return registroAds;
+            }catch(error){
+                console.log(error);
+            }
+        },
+        EliminarAd: async (_,{id})=>{
+            try{
+                await RegistroAds.findOneAndDelete({id_ad:id});
+                return "Se eliminó el AD";
+            }catch(error){
+                console.log(error);
+            }
+        },
         registrarAgencia: async (_,{input}) => {
             try{
 
@@ -752,7 +789,7 @@ const resolvers={
             await Agencia.findByIdAndDelete({_id: id});
             return "Agencia eliminada";
         },
-        registrarInmueble: async (_,{id,input}) => {
+        registrarInmueble: async (_,{id_creador,id_propietario,input1,input2}) => {
             try{
                 let secuencia=await SecuenciasIndices.findOne();
                 if(!secuencia){
@@ -760,16 +797,27 @@ const resolvers={
                     secuencia.indice_inmuebles=1;
                     await secuencia.save();
                 }
-                const nuevoInmueble = new Inmueble(input);
-                nuevoInmueble.creador=id;
+                const nuevoInmueble = new Inmueble(input1);
+                nuevoInmueble.creador=id_creador;
+                nuevoInmueble.propietario=id_propietario;
                 nuevoInmueble.indice=secuencia.indice_inmuebles;
                 nuevoInmueble.historial_precios.push(nuevoInmueble.precio);
+                const inmuebleImagenes=new InmuebleImagenes(input2);
+                inmuebleImagenes.inmueble=nuevoInmueble.id;
+                nuevoInmueble.imagenes=inmuebleImagenes.id;
                 await nuevoInmueble.save();
+                await inmuebleImagenes.save();
                 secuencia.indice_inmuebles=secuencia.indice_inmuebles+1;
                 await secuencia.save();
-                let resultado=await Inmueble.find().where('_id').equals(nuevoInmueble.id);
+                let resultado=await Inmueble.findById(nuevoInmueble.id)
+                .populate("creador",{})
+                .populate({path:"propietario"})
+                .populate({path:"imagenes"})
+                .populate({
+                    path:"usuarios_favorito",match:{"usuario":nuevoInmueble.creador},
+                    populate:{path:"usuario"}});
                 console.log("imprimiendo resultado  ",resultado);
-                return "Se registro correctamente";
+                return resultado;
             }catch(error){
                 console.log(error);
             }
@@ -1194,6 +1242,13 @@ const resolvers={
                         solicitudesUsuarios.usuario_respondedor=id_comprador;
                         solicitudesUsuarios.tipo_solicitud="Calificar";
                         await solicitudesUsuarios.save();
+                        const solicitudesUsuariosPropietario=SolicitudesUsuarios();
+                        solicitudesUsuariosPropietario.fecha_solicitud=fecha;
+                        solicitudesUsuariosPropietario.inmueble=administradorInmueble.inmueble;
+                        solicitudesUsuariosPropietario.usuario_solicitante=administradorInmueble.usuario_solicitante;
+                        solicitudesUsuariosPropietario.usuario_respondedor=inmueble.propietario;
+                        solicitudesUsuariosPropietario.tipo_solicitud="Calificar";
+                        await solicitudesUsuariosPropietario.saver();
                     }else{
                         inmueble.estado_negociacion="Negociaciones avanzadas";
                         inmueble.ultima_modificacion=fecha;
@@ -1253,7 +1308,7 @@ const resolvers={
             inmueble.save();
             let usuario=await Usuario.findById(solicitudesUsuarios.usuario_solicitante);
             usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+calificacion;
-            usuario.cantidad_inmuebles_calificados=usuario.cantidad_inmuebles_calificados+1;
+            usuario.cantidad_calificados=usuario.cantidad_calificados+1;
             await usuario.save();
             let bitacoraInmueble=await BitacoraInmueble();
             bitacoraInmueble.usuario=solicitudesUsuarios.usuario_respondedor;
@@ -1270,6 +1325,8 @@ const resolvers={
             var max=32;
             var longitud=-65.22562;
             var latitud=-18.98654;
+            let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
+                
             let url_imagenes=[
                 "https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2F06d827045d76150a09f4a023dd76d16b.jpg?alt=media&token=7183086f-6817-455e-b8d6-2d84b68fd78c",
                 "https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2F134357408.jpg?alt=media&token=3d0397b8-c067-46de-a853-d40de1760fd4",
@@ -1433,11 +1490,11 @@ const resolvers={
                 numero_aleatorio=Math.floor(Math.random() * (7  - 0)) + 1;
                 inmueble.ambientes=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (5 - 0)) + 1;
-                inmueble.numero_dormitorios=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
+                inmueble.dormitorios=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (5  - 0)) + 1;
-                inmueble.numero_banios=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
+                inmueble.banios=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (5  - 0)) + 1;
-                inmueble.numero_garaje=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
+                inmueble.garaje=inmueble.tipo_inmueble=="Terreno"?0:numero_aleatorio;
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
                 inmueble.amoblado=inmueble.tipo_inmueble=="Terreno"?false:valores_booleanos[numero_aleatorio];
                 numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
@@ -1540,68 +1597,216 @@ const resolvers={
                 inmueble.autorizacion="Activo";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
-
+                
+                
                 const inmuebleImagenes=InmuebleImagenes();
                 let imagenes=[];
                 var cantidad_imagenes=3;
-
                 var j=0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_principal=imagenes;
-                imagenes=[];
-                cantidad_imagenes=Math.floor(Math.random() * (2  - 0)) + 1;
-                for(j=0;j<cantidad_imagenes;j++){
-                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
-                    imagenes.push(url_imagenes[numero_aleatorio]);
-                }
-                inmuebleImagenes.url_imagenes_exteriores=imagenes;
+                inmuebleImagenes.principales=imagenes;
                 imagenes=[];
                 cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_dormitorios=imagenes;
+                inmuebleImagenes.plantas=inmueble.plantas>0?imagenes:[];
                 imagenes=[];
                 cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_banios=imagenes;
+                inmuebleImagenes.ambientes=inmueble.abientes>0?imagenes:[];
                 imagenes=[];
                 cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_garaje=imagenes;
+                inmuebleImagenes.dormitorios=inmueble.dormitorios>0?imagenes:[];
                 imagenes=[];
                 cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_hall=imagenes;
+                inmuebleImagenes.banios=inmueble.banios>0?imagenes:[];
                 imagenes=[];
                 cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_jardin=imagenes;
+                inmuebleImagenes.garaje=inmueble.garaje>0?imagenes:[];
                 imagenes=[];
                 cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
                 for(j=0;j<cantidad_imagenes;j++){
                     numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
                     imagenes.push(url_imagenes[numero_aleatorio]);
                 }
-                inmuebleImagenes.url_imagenes_dependencias=imagenes;
+                inmuebleImagenes.amoblado=inmueble.amoblado?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.lavanderia=inmueble.lavanderia?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.cuarto_lavado=inmueble.cuarto_lavado?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.churrasquero=inmueble.churrasquero?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.azotea=inmueble.azotea?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.condominio_privado=inmueble.condominio_privado?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.cancha=inmueble.cancha?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.piscina=inmueble.piscina?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.sauna=inmueble.sauna?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.jacuzzi=inmueble.jacuzzi?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.estudio=inmueble.estudio?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.jardin=inmueble.jardin?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.porton_electrico=inmueble.porton_electrico?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.aire_acondicionado=inmueble.aire_acondicionado?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.calefaccion=inmueble.calefaccion?imagenes:[];;
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.ascensor=inmueble.ascensor?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.deposito=inmueble.deposito?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.sotano=inmueble.sotano?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.balcon=inmueble.balcon?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.tienda=inmueble.tienda?imagenes:[];
+                imagenes=[];
+                cantidad_imagenes=Math.floor(Math.random() * (3  - 0)) + 0;
+                for(j=0;j<cantidad_imagenes;j++){
+                    numero_aleatorio=Math.floor(Math.random() * (url_imagenes.length  - 0)) + 0;
+                    imagenes.push(url_imagenes[numero_aleatorio]);
+                }
+                inmuebleImagenes.amurallado_terreno=inmueble.amurallado_terreno?imagenes:[];
                 inmuebleImagenes.inmueble=inmueble.id;
                 inmueble.imagenes=inmuebleImagenes.id;
+                numero_aleatorio=Math.floor(Math.random() * (valores_booleanos.length  - 0)) + 0;
+                if(valores_booleanos[numero_aleatorio]){
+                    const inmuebleComprobante=InmuebleComprobante();
+                    inmuebleComprobante.link_imagen_deposito=link_comprobante;
+                    numero_aleatorio=Math.floor(Math.random() * (nombres.length  - 0)) + 0;
+                    inmuebleComprobante.nombre_depositante=nombres[numero_aleatorio];
+                    inmuebleComprobante.medio_pago="Depósito";
+                    inmuebleComprobante.monto_pago=30;
+                    inmuebleComprobante.plan=1;
+                    inmuebleComprobante.cuenta_banco="612febf03b43f416c48b72b9";
+                    inmuebleComprobante.numero_transaccion="123561565";
+                    inmuebleComprobante.inmueble=inmueble.id;
+                    inmueble.comprobante=inmuebleComprobante.id;
+                    await inmuebleComprobante.save();
+                }
                 inmueble.creador=id_creador;
                 inmueble.propietario=id_propietario;
                 //console.log(inmueble);
@@ -1825,7 +2030,7 @@ const resolvers={
         buscarUsuarioEmail: async(_,{email})=>{
             const usuario=await Usuario.findOne({email:email});
             if(!usuario){
-                throw new Error("No se encontró al usuario");
+                throw new Error("No se encontró al usuarioc");
             }
             return usuario;
         },

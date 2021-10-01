@@ -13,6 +13,7 @@
         obtenerAgentePagosAdministrador(id:ID):[AgentePago]
         obtenerPlanesPagoAgente:[PlanesPagoAgente]
         obtenerVersionesAPP:VersionesAPP
+        obtener:[RegistroAds]
     }
 
     input UsuarioIDInput {
@@ -37,7 +38,7 @@
         verificado: Boolean
         estado_cuenta: Boolean
         sumatoria_calificacion:Int
-        cantidad_inmuebles_calificados:Int
+        cantidad_calificados:Int
         agente_pagos:[AgentePago]
     }
 
@@ -172,6 +173,11 @@
         monto_mensual:Int
         activo:Boolean
     }
+    type RegistroAds{
+        id:ID
+        id_ad:String
+        tipo_ad:String
+    }
     input PlanesPagoAgenteInput{
         nombre_plan:String
         plan:Int
@@ -264,6 +270,7 @@
         fecha_publicacion:Date
         link_descarga:String
     }
+    
     extend type Mutation {
         crearModificarUsuario(input: AutenticarInput,actividad:String) : Usuario
         autenticarUsuario(input: AutenticarInput) : Usuario
@@ -282,4 +289,6 @@
         obtenerEmailClaveVerificaciones(email:String,clave:Int):EmailClaveVerificaciones
         registrarVersionesAPP(input:VersionesAPPInput):String
         buscarUsuarioEmail(email:String) : Usuario
+        RegistrarAd(id_ad : String,tipo_ad : String) : RegistroAds
+        EliminarAd(id : String) : String
     }

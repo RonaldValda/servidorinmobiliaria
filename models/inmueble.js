@@ -108,13 +108,13 @@ const InmuebleSchema = new mongoose.Schema({
     ambientes:{
         type: Number
     },
-    numero_dormitorios:{
+    dormitorios:{
         type: Number,
     },
-    numero_banios: {
+    banios: {
         type: Number
     },
-    numero_garaje: {
+    garaje: {
         type: Number
     },
     amoblado:{
@@ -234,6 +234,10 @@ const InmuebleSchema = new mongoose.Schema({
     imagenes: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'InmuebleImagenes'
+    },
+    comprobante: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'InmuebleComprobante'
     },
     propietario:{
         type: mongoose.Schema.Types.ObjectId,

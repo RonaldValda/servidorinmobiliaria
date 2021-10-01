@@ -45,9 +45,9 @@ type Inmueble{
     habilitado_credito: Boolean
     plantas: Int
     ambientes: Int
-    numero_dormitorios: Int
-    numero_banios: Int
-    numero_garaje: Int
+    dormitorios: Int
+    banios: Int
+    garaje: Int
     amoblado: Boolean
     lavanderia: Boolean
     cuarto_lavado: Boolean
@@ -94,28 +94,77 @@ type Inmueble{
     creador:Usuario
     usuarios_favorito: [UsuarioFavorito]
     imagenes:InmuebleImagenes
+    comprobante:InmuebleComprobante
+}
+type InmuebleComprobante{
+    id:ID
+    medio_pago:String
+    monto_pago:Int
+    plan:Int
+    numero_transaccion:String
+    cuenta_banco:CuentaBanco
+    nombre_depositante:String
+    link_imagen_deposito:String
 }
 type InmuebleImagenes{
     id:ID
     inmueble:ID
-    url_imagenes_principal:[String]
-    url_imagenes_exteriores:[String]
-    url_imagenes_dormitorios:[String]
-    url_imagenes_banios:[String]
-    url_imagenes_garaje:[String]
-    url_imagenes_hall:[String]
-    url_imagenes_jardin:[String]
-    url_imagenes_dependencias:[String]
+    principales:[String]
+    plantas: [String]
+    ambientes: [String]
+    dormitorios: [String]
+    banios: [String]
+    garaje: [String]
+    amoblado: [String]
+    lavanderia: [String]
+    cuarto_lavado: [String]
+    churrasquero: [String]
+    azotea: [String]
+    condominio_privado: [String]
+    cancha: [String]
+    piscina: [String]
+    sauna: [String]
+    jacuzzi: [String]
+    estudio: [String]
+    jardin: [String]
+    porton_electrico: [String]
+    aire_acondicionado: [String]
+    calefaccion: [String]
+    ascensor: [String]
+    deposito: [String]
+    sotano: [String]
+    balcon: [String]
+    tienda: [String]
+    amurallado_terreno: [String]
 }
 input InmuebleImagenesInput{
-    url_imagenes_principal:[String]
-    url_imagenes_exteriores:[String]
-    url_imagenes_dormitorios:[String]
-    url_imagenes_banios:[String]
-    url_imagenes_garaje:[String]
-    url_imagenes_hall:[String]
-    url_imagenes_jardin:[String]
-    url_imagenes_dependencias:[String]
+    principales: [String]
+    plantas: [String]
+    ambientes: [String]
+    dormitorios: [String]
+    banios: [String]
+    garaje: [String]
+    amoblado: [String]
+    lavanderia: [String]
+    cuarto_lavado: [String]
+    churrasquero: [String]
+    azotea: [String]
+    condominio_privado: [String]
+    cancha: [String]
+    piscina: [String]
+    sauna: [String]
+    jacuzzi: [String]
+    estudio: [String]
+    jardin: [String]
+    porton_electrico: [String]
+    aire_acondicionado: [String]
+    calefaccion: [String]
+    ascensor: [String]
+    deposito: [String]
+    sotano: [String]
+    balcon: [String]
+    tienda: [String]
+    amurallado_terreno: [String]
 }
 input ObtenerInmuebleNuevoInput{
     fecha: Date
@@ -168,9 +217,9 @@ input InmuebleInput{
     habilitado_credito: Boolean
     plantas: Int
     ambientes: Int
-    numero_dormitorios: Int
-    numero_banios: Int
-    numero_garaje: Int
+    dormitorios: Int
+    banios: Int
+    garaje: Int
     amoblado: Boolean
     lavanderia: Boolean
     cuarto_lavado: Boolean
@@ -331,7 +380,7 @@ type Zona{
     coordenadas:[Float]
 }
 extend type Mutation {
-    registrarInmueble(id: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput) : String
+    registrarInmueble(id_creador: ID!,id_propietario: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput) : Inmueble
     actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput) : String
     actualizarPrecioInmueble(id: ID!, precio: Int) : String
     eliminarInmueble(id: ID!) : String

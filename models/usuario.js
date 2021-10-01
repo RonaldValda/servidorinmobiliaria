@@ -56,7 +56,7 @@ const UsuarioSchema = mongoose.Schema({
         type: Number,
         default: 0
     },
-    cantidad_inmuebles_calificados:{
+    cantidad_calificados:{
         type:Number,
         default: 0
     },
