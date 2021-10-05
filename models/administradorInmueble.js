@@ -15,21 +15,25 @@ const AdministradorInmuebleSchema = new mongoose.Schema({
         default:false
     },
     tipo_solicitud:{
-        type:String
+        type:String,
+        default:""
     },
     respuesta:{
-        type:String
+        type:String,
+        default:""
     },
     observaciones:{
-        type:String
+        type:String,
+        default:""
     },
     link_respaldo_solicitud:{
-        type:String
+        type:String,
+        default:""
     },
     link_respaldo_respuesta:{
-        type:String
+        type:String,
+        default:""
     },
-    
     solicitud_terminada:{
         type:Boolean,
         default:false

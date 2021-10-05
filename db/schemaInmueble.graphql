@@ -290,6 +290,28 @@ type UsuarioInmuebleBase{
     antiguedad_construccion_max: Int
     precio_min: Int
     precio_max: Int
+    cantidad_inmuebles: Int
+    amoblado: Int
+    lavanderia: Int
+    cuarto_lavado: Int
+    churrasquero: Int
+    azotea: Int
+    condominio_privado: Int
+    cancha: Int
+    piscina: Int
+    sauna: Int
+    jacuzzi: Int
+    estudio: Int
+    jardin: Int
+    porton_electrico: Int
+    aire_acondicionado: Int
+    calefaccion: Int
+    ascensor: Int
+    deposito: Int
+    sotano: Int
+    balcon: Int
+    tienda: Int
+    amurallado_terreno: Int
     fecha_inicio: Date
 }
 input UsuarioInmuebleBaseInput{
@@ -307,6 +329,28 @@ input UsuarioInmuebleBaseInput{
     antiguedad_construccion_max: Int
     precio_min: Int
     precio_max: Int
+    cantidad_inmuebles: Int
+    amoblado: Int
+    lavanderia: Int
+    cuarto_lavado: Int
+    churrasquero: Int
+    azotea: Int
+    condominio_privado: Int
+    cancha: Int
+    piscina: Int
+    sauna: Int
+    jacuzzi: Int
+    estudio: Int
+    jardin: Int
+    porton_electrico: Int
+    aire_acondicionado: Int
+    calefaccion: Int
+    ascensor: Int
+    deposito: Int
+    sotano: Int
+    balcon: Int
+    tienda: Int
+    amurallado_terreno: Int
 }
 
 

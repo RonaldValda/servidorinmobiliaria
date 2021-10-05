@@ -43,6 +43,94 @@ const UsuarioInmuebleBaseSchema = new mongoose.Schema({
     precio_max:{
         type: Number
     },
+    cantidad_inmuebles:{
+        type: Number,
+        default:0
+    },
+    amoblado:{
+        type: Number,
+        default:0
+    },
+    lavanderia: {
+        type: Number,
+        default:0
+    },
+    cuarto_lavado: {
+        type: Number,
+        default:0
+    },
+    churrasquero: {
+        type: Number,
+        default:0
+    },
+    azotea: {
+        type: Number,
+        default:0
+    },
+    condominio_privado: {
+        type: Number,
+        default:0
+    },
+    cancha: {
+        type: Number,
+        default:0
+    },
+    piscina: {
+        type: Number,
+        default:0
+    },
+    sauna: {
+        type: Number,
+        default:0
+    },
+    jacuzzi:{
+        type: Number,
+        default:0
+    },
+    estudio: {
+        type: Number,
+        default:0
+    },
+    jardin: {
+        type: Number,
+        default:0
+    },
+    porton_electrico:{
+        type: Number,
+        default:0
+    },
+    aire_acondicionado:{
+        type: Number,
+        default:0
+    },
+    calefaccion:{
+        type: Number,
+        default:0
+    },
+    ascensor: {
+        type: Number,
+        default:0
+    },
+    deposito: {
+        type: Number,
+        default:0
+    },
+    sotano: {
+        type: Number,
+        default:0
+    },
+    balcon: {
+        type: Number,
+        default:0
+    },
+    tienda: {
+        type: Number,
+        default:0
+    },
+    amurallado_terreno:{
+        type: Number,
+        default:0
+    },
     fecha_inicio:{
         type:Date
     },

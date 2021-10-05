@@ -501,6 +501,17 @@ const resolvers={
             let registroAds=await RegistroAds.find({});
             return registroAds;     
         },
+        obtenerReportesInmueble: async(_,{id_usuario,id_inmueble,estado_1,estado_2})=> {
+            var filter1={};
+            let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
+            filter1.usuario_solicitante=id_usuario;
+            if(estado_1==estado_2){
+                filter1.solicitud_terminada=estado_1;
+            }
+            filter1.administrador_inmueble=administradorInmueble.id;
+            let solicitudes=await SolicitudesAdministradores.find(filter1);
+            return solicitudes;
+        }
 
     },
 
@@ -586,14 +597,6 @@ const resolvers={
                 if(existeUsuario.estado_cuenta==false){
                     throw new Error('Cuenta inactiva, contáctese con el administrador');
                 }
-                /*usuario=await Usuario.findOne({email:input.email})
-                .populate("usuario_inmueble_base")
-                .populate({path:"agente_pagos",match:filter1,
-                populate:{path:"cuenta_banco"}})
-                .populate({path:"agente_pagos",match:filter1,
-                populate:{path:"agente"}})
-                .populate({path:"agente_pagos",match:filter1,
-                populate:{path:"administrador"}});*/
                 usuario=await Usuario.findOne({email:input.email})
                 .populate({path:"base_visto",match:{tipo:"visto"}})
                 .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
@@ -615,17 +618,6 @@ const resolvers={
                     //var fecha=new Date();
                     fecha.setDate(fecha.getDate()-3);
                     await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
-                    /*usuario=await Usuario.findOne({email:input.email})
-                    .populate("usuario_inmueble_base")
-                    .populate("agente_pagos");*/
-                    /*usuario=await Usuario.findOne({email:input.email})
-                    .populate("usuario_inmueble_base")
-                    .populate({path:"agente_pagos",match:filter1,
-                    populate:{path:"cuenta_banco"}})
-                    .populate({path:"agente_pagos",match:filter1,
-                    populate:{path:"agente"}})
-                    .populate({path:"agente_pagos",match:filter1,
-                    populate:{path:"administrador"}});*/
                     usuario=await Usuario.findOne({email:input.email})
                     .populate({path:"base_visto",match:{tipo:"visto"}})
                     .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
@@ -1170,6 +1162,40 @@ const resolvers={
                 return bitacoraInmueble.actividad;
             }
         },
+        reportarInmueble: async(_,{id_inmueble,id_usuario,observaciones,tipo_reporte})=>{
+            let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
+            let solicitudesAdministradores=await SolicitudesAdministradores.findOne({administrador_inmueble:administradorInmueble.id,usuario_solicitante:id_usuario,solicitud_terminada:false,tipo_solicitud:tipo_reporte});
+            var fecha=new Date();
+            if(solicitudesAdministradores){
+                solicitudesAdministradores.observaciones=observaciones;
+                solicitudesAdministradores.fecha_solicitud=fecha;
+                await solicitudesAdministradores.save();
+                if(solicitudesAdministradores.usuario_solicitante=administradorInmueble.usuario_solicitante&& solicitudesAdministradores.tipo_solicitud==administradorInmueble.tipo_solicitud){
+                    administradorInmueble.observaciones=observaciones;
+                    administradorInmueble.fecha_solicitud=fecha;
+                    await administradorInmueble.save();
+                }
+            }else{
+                solicitudesAdministradores=SolicitudesAdministradores();
+                solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
+                solicitudesAdministradores.usuario_solicitante=id_usuario;
+                solicitudesAdministradores.observaciones=observaciones;
+                solicitudesAdministradores.tipo_solicitud=tipo_reporte;
+                solicitudesAdministradores.fecha_solicitud=fecha;
+                await solicitudesAdministradores.save();
+                administradorInmueble.fecha_solicitud=fecha;
+                administradorInmueble.usuario_solicitante=id_usuario;
+                administradorInmueble.observaciones=observaciones;
+                administradorInmueble.respuesta_entregada=false;
+                administradorInmueble.respuesta="";
+                administradorInmueble.tipo_solicitud=tipo_reporte;
+                administradorInmueble.solicitud_terminada=false;
+                administradorInmueble.link_respaldo_respuesta="";
+                administradorInmueble.link_respaldo_solicitud="";
+                await administradorInmueble.save();
+            }
+            return solicitudesAdministradores;
+        },
         responderSolicitudAdministrador: async (_,{id,id_respondedor,id_comprador,id_solicitud,input})=>{
             let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
             
@@ -1182,10 +1208,8 @@ const resolvers={
                     throw new Error('El inmueble está a cargo de otro administrador');
                 }
             }
-            
-           
+
             let solicitudesAdministradores=await SolicitudesAdministradores.findOne({_id:id_solicitud});
-            
             solicitudesAdministradores.fecha_respuesta=fecha;
             solicitudesAdministradores.respuesta=input.respuesta;
             solicitudesAdministradores.observaciones=input.observaciones;
@@ -1317,8 +1341,6 @@ const resolvers={
             bitacoraInmueble.fecha=fecha;
             await bitacoraInmueble.save();
             return "Se registró la calificacion";
-            
-            
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
             var min=30;
@@ -1820,7 +1842,6 @@ const resolvers={
                 bitacoraInmueble.actividad="Envío de solicitud para dar de alta el inmueble creado";
                 await bitacoraInmueble.save();
                 let administradorInmueble=await AdministradorImmueble();
-                
                 administradorInmueble.tipo_solicitud="Dar alta";
                 administradorInmueble.respuesta="";
                 administradorInmueble.observaciones="";
@@ -1837,7 +1858,6 @@ const resolvers={
                 solicitudesAdministradores.observaciones="";
                 solicitudesAdministradores.link_respaldo_solicitud="";
                 solicitudesAdministradores.link_respaldo_respuesta="";
-                solicitudesAdministradores.inmueble=inmueble.id;
                 solicitudesAdministradores.usuario_solicitante=id_creador;
                 await solicitudesAdministradores.save();
 

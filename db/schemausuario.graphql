@@ -8,6 +8,7 @@
         obtenerAdministradorInmueble(id:ID):[AdministradorInmueble]
         obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
         obtenerSolicitudesUsuarios(id:ID):[SolicitudesUsuarios]
+        obtenerReportesInmueble(id_usuario:ID,id_inmueble:ID,estado_1:Boolean,estado_2:Boolean):[SolicitudesAdministradores]
         obtenerCuentasBancos:[CuentaBanco]
         obtenerAgentePagos(id:ID):[AgentePago]
         obtenerAgentePagosAdministrador(id:ID):[AgentePago]
@@ -97,6 +98,7 @@
     type SolicitudesAdministradores{
         id:ID
         administrador_inmueble:AdministradorInmueble
+        usuario_solicitante:Usuario
         fecha_solicitud:Date
         fecha_respuesta:Date
         respuesta_entregada:Boolean
@@ -291,4 +293,5 @@
         buscarUsuarioEmail(email:String) : Usuario
         RegistrarAd(id_ad : String,tipo_ad : String) : RegistroAds
         EliminarAd(id : String) : String
+        reportarInmueble(id_inmueble:ID,id_usuario:ID,observaciones:String,tipo_reporte:String) : SolicitudesAdministradores
     }
