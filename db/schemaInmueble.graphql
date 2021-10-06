@@ -95,6 +95,9 @@ type Inmueble{
     usuarios_favorito: [UsuarioFavorito]
     imagenes:InmuebleImagenes
     comprobante:InmuebleComprobante
+    cantidad_vistos:Int
+    cantidad_doble_vistos:Int
+    cantidad_favoritos:Int
 }
 type InmuebleComprobante{
     id:ID
@@ -313,6 +316,8 @@ type UsuarioInmuebleBase{
     tienda: Int
     amurallado_terreno: Int
     fecha_inicio: Date
+    fecha_ultimo_guardado: Date
+    fecha_cache: Date
 }
 input UsuarioInmuebleBaseInput{
     dormitorios_min: Int
@@ -429,7 +434,7 @@ extend type Mutation {
     actualizarPrecioInmueble(id: ID!, precio: Int) : String
     eliminarInmueble(id: ID!) : String
     registrarInmuebleMasivo(id_creador: ID!,id_propietario: ID!): String
-    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput, input_visto: UsuarioInmuebleBaseInput,input_doble_visto:UsuarioInmuebleBaseInput,input_favorito:UsuarioInmuebleBaseInput): String
+    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput): String
     actualizarFechaInmuebleBase(id: ID,fecha: String):String
     crearZona(input:ZonaInput):Zona
     modificarZona(id:ID,input:ZonaInput):Zona

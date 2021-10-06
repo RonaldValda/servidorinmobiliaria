@@ -247,7 +247,18 @@ const InmuebleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
     },
-    
+    cantidad_vistos:{
+        type: Number,
+        default: 0
+    },
+    cantidad_doble_vistos:{
+        type:Number,
+        default:0
+    },
+    cantidad_favoritos:{
+        type:Number,
+        default:0
+    },
     usuarios_favorito: [{ 
         type:mongoose.Schema.Types.ObjectId,ref:'InmuebleFavorito',default:{}}
     ],
@@ -269,7 +280,7 @@ const InmuebleSchema = new mongoose.Schema({
     },
     calificacion:{
         type: Number,
-        Default:0
+        default:0
     },
     categoria:{
         type: String,

@@ -980,31 +980,51 @@ const resolvers={
 
             return "Inmueble eliminado";
         },
-        registrarInmuebleFavorito: async (_,{id_inmueble,id_usuario,input1,input_visto,input_doble_visto,input_favorito}) => {
+        registrarInmuebleFavorito: async (_,{id_inmueble,id_usuario,input1}) => {
+            
             try{
                 let inmuebleFavorito=await InmuebleFavorito.findOne({"inmueble":id_inmueble,"usuario":id_usuario});
                 let usuarioInmuebleBase=await UsuarioInmuebleBase.findOne({"usuario":id_usuario});
                 let base_visto=await UsuarioInmuebleBase.findOne({"usuario":id_usuario,"tipo":"visto"});
                 let base_doble_visto=await UsuarioInmuebleBase.findOne({"usuario":id_usuario,"tipo":"doble_visto"});
                 let base_favorito=await UsuarioInmuebleBase.findOne({"usuario":id_usuario,"tipo":"favorito"});
+                var fecha=new Date();
+                let inmueble=await Inmueble.findById(id_inmueble);
+                
                 if(inmuebleFavorito){
+                    if(inmuebleFavorito.favorito&&!input1.favorito){
+                        inmueble.cantidad_favoritos=inmueble.cantidad_favoritos-1;
+                    }else if(!inmuebleFavorito.favorito&&input1.favorito){
+                        inmueble.cantidad_favoritos=inmueble.cantidad_favoritos+1;
+                    }
+                    if(!inmuebleFavorito.doble_visto&&input1.doble_visto){
+                        inmueble.cantidad_doble_vistos=inmueble.cantidad_doble_vistos+1;
+                    }
                     await InmuebleFavorito.findOneAndUpdate({_id:inmuebleFavorito.id},input1);
+                    await inmueble.save();
                 }else{
                     inmuebleFavorito=new InmuebleFavorito(input1);
                     inmuebleFavorito.inmueble = id_inmueble;
                     inmuebleFavorito.usuario = id_usuario;
                     await inmuebleFavorito.save();
-                    let inmueble=await Inmueble.findById(id_inmueble);
+                    if(inmuebleFavorito.visto){
+                        inmueble.cantidad_vistos=inmueble.cantidad_vistos+1;
+                    }
+                    if(inmuebleFavorito.doble_visto){
+                        inmueble.cantidad_doble_vistos=inmueble.cantidad_doble_vistos+1;
+                    }
+                    if(inmuebleFavorito.favorito){
+                        inmueble.cantidad_favoritos=inmueble.cantidad_favoritos+1;
+                    }
                     inmueble.usuarios_favorito.push(inmuebleFavorito);
                     await inmueble.save();
                     
                 }
                 let usuario=await Usuario.findById(id_usuario);
-
                 if(base_visto){
-                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"visto"},input_visto);
+                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"visto"},{fecha_cache:fecha});
                 }else{
-                    usuarioInmuebleBase=new UsuarioInmuebleBase(input_visto);
+                    usuarioInmuebleBase=new UsuarioInmuebleBase();
                     usuarioInmuebleBase.usuario=id_usuario;
                     usuarioInmuebleBase.fecha_inicio=Date.now();
                     usuario.usuario_inmueble_base.push(usuarioInmuebleBase.id);
@@ -1012,9 +1032,9 @@ const resolvers={
                     await usuarioInmuebleBase.save();
                 }
                 if(base_doble_visto){
-                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"doble_visto"},input_doble_visto);
+                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"doble_visto"},{fecha_cache:fecha});
                 }else{
-                    usuarioInmuebleBase=new UsuarioInmuebleBase(input_visto);
+                    usuarioInmuebleBase=new UsuarioInmuebleBase();
                     usuarioInmuebleBase.usuario=id_usuario;
                     usuarioInmuebleBase.fecha_inicio=Date.now();
                     usuario.usuario_inmueble_base.push(usuarioInmuebleBase.id);
@@ -1022,9 +1042,9 @@ const resolvers={
                     await usuarioInmuebleBase.save();
                 }
                 if(base_favorito){
-                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"favorito"},input_favorito);
+                    await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"favorito"},{fecha_cache:fecha});
                 }else{
-                    usuarioInmuebleBase=new UsuarioInmuebleBase(input_visto);
+                    usuarioInmuebleBase=new UsuarioInmuebleBase();
                     usuarioInmuebleBase.usuario=id_usuario;
                     usuarioInmuebleBase.fecha_inicio=Date.now();
                     usuario.usuario_inmueble_base.push(usuarioInmuebleBase.id);
@@ -1036,6 +1056,13 @@ const resolvers={
             }catch(error){
                 console.log(error);
             }
+        },
+        actualizarInmuebleBase: async(_,{id_usuario,input_visto,input_doble_visto,input_favorito})=>{
+            var fecha=new Date();
+            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"visto"},{input_visto,fecha_cache:fecha,fecha_ultimo_guardado:fecha});
+            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"doble_visto"},{input_doble_visto,fecha_cache:fecha,fecha_ultimo_guardado:fecha});
+            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"favorito"},{input_favorito,fecha_cache:fecha,fecha_ultimo_guardado:fecha})
+            return "Se actualizó el inmueble base";
         },
         actualizarFechaInmuebleBase: async(_,{id,fecha})=>{
             //await UsuarioInmuebleBase.findOneAndUpdate({_id:id},{fecha_inicio:fecha});

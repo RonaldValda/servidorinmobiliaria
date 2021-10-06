@@ -294,4 +294,5 @@
         RegistrarAd(id_ad : String,tipo_ad : String) : RegistroAds
         EliminarAd(id : String) : String
         reportarInmueble(id_inmueble:ID,id_usuario:ID,observaciones:String,tipo_reporte:String) : SolicitudesAdministradores
+        actualizarInmuebleBase(id_usuario:ID,input_visto:UsuarioInmuebleBaseInput,input_doble_visto:UsuarioInmuebleBaseInput,input_favorito:UsuarioInmuebleBaseInput): String
     }

@@ -60,6 +60,7 @@ const UsuarioSchema = mongoose.Schema({
         type:Number,
         default: 0
     },
+    
     agente_pagos:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'AgentePago',default:{}

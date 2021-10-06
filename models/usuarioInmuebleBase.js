@@ -2,46 +2,60 @@ const mongoose = require('mongoose');
 
 const UsuarioInmuebleBaseSchema = new mongoose.Schema({
     dormitorios_min: {
-        type: Number
+        type: Number,
+        default:0
     },
     dormitorios_max: {
-        type: Number
+        type: Number,
+        default:0
     },
     banios_min: {
-        type: Number
+        type: Number,
+        default:0
     },
     banios_max: {
-        type: Number
+        type: Number,
+        default:0
     },
     garaje_min: {
-        type: Number
+        type: Number,
+        default:0
     },
     garaje_max: {
-        type: Number
+        type: Number,
+        default:0
     },
     superficie_terreno_min: {
-        type: Number
+        type: Number,
+        default:0
     },
     superficie_terreno_max: {
-        type: Number
+        type: Number,
+        default:0
     },
     superficie_construccion_min:{
-        type: Number
+        type: Number,
+        default:0
     },
     superficie_construccion_max:{
-        type: Number
+        type: Number,
+        default:0
     },
     antiguedad_construccion_min:{
-        type: Number
+        type: Number,
+        default:0
     },
     antiguedad_construccion_max: {
-        type: Number
+        type: Number,
+        default:0
     },
     precio_min: {
-        type: Number
+        type: Number,
+        default:0
     },
     precio_max:{
-        type: Number
+        type: Number,
+        default:0
     },
     cantidad_inmuebles:{
         type: Number,
@@ -132,7 +146,15 @@ const UsuarioInmuebleBaseSchema = new mongoose.Schema({
         default:0
     },
     fecha_inicio:{
-        type:Date
+        type:Date,
+    },
+    fecha_ultimo_guardado:{
+        type:Date,
+        default: Date.now()
+    },
+    fecha_cache:{
+        type:Date,
+        default: Date.now()
     },
     tipo:{
         type:String
