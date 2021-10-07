@@ -303,7 +303,7 @@ const resolvers={
         },
         obtenerMisInmueblesVenta: async (_,{id})=>{
             var filter1={};
-            //filter1.creador={$in:id};
+            filter1.creador={$in:id};
             //if(input1.autorizacion!="Todos") filter1.ciudad={$in:input1.ciudad};
             //if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
@@ -355,7 +355,7 @@ const resolvers={
         obtenerAdministradorInmueble: async (_,{id})=>{
             var filter1={};
             filter1.solicitud_terminada={$in:false};
-           // filter1.usuario_respondedor={$in:[null,id]};
+            filter1.usuario_respondedor={$in:[null,id]};
             //if(input1.autorizacion!="Todos") filter1.ciudad={$in:input1.ciudad};
             //if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
@@ -365,6 +365,34 @@ const resolvers={
                 path:"inmueble",populate:({path:"imagenes"}),populate:({path:"creador"})})
                 .populate({path:"usuario_solicitante"})
                 .populate({path:"usuario_respondedor"});*/
+                await administradorImmueble.find({}).populate({
+                    path:"inmueble",populate:{path:"creador"}}).
+                    populate({
+                        path: "inmueble",populate:{path:"imagenes"}
+                    })
+                    .populate({
+                        path: "inmueble",populate:{path:"comprobante",
+                        populate:{path:"cuenta_banco"}    
+                    }
+                    })
+                    .populate({
+                        path:"inmueble",populate:{path:"propietario"}
+                    })
+                    .populate({path:"usuario_solicitante"})
+                    .populate({path:"usuario_respondedor"});
+            
+            return administradorImmueble;
+        },
+        obtenerInmueblesSuperUsuario: async (_,{ciudad,tipo_contrato})=>{
+            var filter1={};
+            //filter1.ciudad=ciudad;
+            //filter1.tipo_contrato=tipo_contrato;
+            //filter1.solicitud_terminada={$in:false};
+            //filter1.usuario_respondedor={$in:[null,id]};
+            var fecha=new Date();
+            fecha.setDate(fecha.getDate()-3);
+            filter1.fecha_solicitud={$gte:fecha};
+            let administradorImmueble=AdministradorImmueble.find(filter1).sort({fecha_solicitud:1});
                 await administradorImmueble.find({}).populate({
                     path:"inmueble",populate:{path:"creador"}}).
                     populate({
@@ -993,8 +1021,13 @@ const resolvers={
                 
                 if(inmuebleFavorito){
                     if(inmuebleFavorito.favorito&&!input1.favorito){
-                        inmueble.cantidad_favoritos=inmueble.cantidad_favoritos-1;
+                        //console.log("de favorito a no favorito");
+                        if(inmueble.cantidad_favoritos>0){
+                            inmueble.cantidad_favoritos=inmueble.cantidad_favoritos-1;
+                        }
+                        
                     }else if(!inmuebleFavorito.favorito&&input1.favorito){
+                        //console.log("de no favorito a favorito");
                         inmueble.cantidad_favoritos=inmueble.cantidad_favoritos+1;
                     }
                     if(!inmuebleFavorito.doble_visto&&input1.doble_visto){
@@ -1370,8 +1403,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=30;
-            var max=32;
+            var min=5;
+            var max=5;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";

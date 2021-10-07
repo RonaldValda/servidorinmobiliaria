@@ -6,6 +6,7 @@
         obtenerUsuariosID(input: UsuarioIDInput) : [Usuario] 
         obtenerUsuarioFavorito(id:ID) : [UsuarioFavorito]
         obtenerAdministradorInmueble(id:ID):[AdministradorInmueble]
+        obtenerInmueblesSuperUsuario(ciudad:String,tipo_contrato:String):[AdministradorInmueble]
         obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
         obtenerSolicitudesUsuarios(id:ID):[SolicitudesUsuarios]
         obtenerReportesInmueble(id_usuario:ID,id_inmueble:ID,estado_1:Boolean,estado_2:Boolean):[SolicitudesAdministradores]
