@@ -478,9 +478,7 @@ const resolvers={
                 //fecha.setDate(fecha.getDate()-3);
                 await Usuario.findOneAndUpdate({email:email},{fecha_ultimo_ingreso:fecha})
                 usuario=await Usuario.findOne({email:email})
-                .populate({path:"base_visto",match:{tipo:"visto"}})
-                .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
-                .populate({path:"favorito",match:{tipo:"favorito"}})
+                .populate({path:"usuario_inmueble_base"})
                 .populate({path:"agente_pagos",match:filter1,
                 populate:{path:"cuenta_banco"}})
                 .populate({path:"agente_pagos",match:filter1,
@@ -509,9 +507,7 @@ const resolvers={
                 return usuario;
             }else{
                 usuario=await Usuario.findOne({email:""})
-                .populate({path:"base_visto",match:{tipo:"visto"}})
-                .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
-                .populate({path:"favorito",match:{tipo:"favorito"}})
+                .populate("usuario_inmueble_base")
                 .populate({path:"agente_pagos",match:filter1,
                 populate:{path:"cuenta_banco"}})
                 .populate({path:"agente_pagos",match:filter1,
@@ -583,9 +579,7 @@ const resolvers={
                 }
                 
                 usuario=await Usuario.findOne({email:input.email})
-                    .populate({path:"base_visto",match:{tipo:"visto"}})
-                    .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
-                    .populate({path:"favorito",match:{tipo:"favorito"}})
+                    .populate("usuario_inmueble_base")
                     .populate({path:"agente_pagos",match:filter1,
                     populate:{path:"cuenta_banco"}})
                     .populate({path:"agente_pagos",match:filter1,
@@ -626,9 +620,7 @@ const resolvers={
                     throw new Error('Cuenta inactiva, contáctese con el administrador');
                 }
                 usuario=await Usuario.findOne({email:input.email})
-                .populate({path:"base_visto",match:{tipo:"visto"}})
-                .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
-                .populate({path:"favorito",match:{tipo:"favorito"}})
+                .populate("usuario_inmueble_base")
                 .populate({path:"agente_pagos",match:filter1,
                 populate:{path:"cuenta_banco"}})
                 .populate({path:"agente_pagos",match:filter1,
@@ -647,9 +639,7 @@ const resolvers={
                     fecha.setDate(fecha.getDate()-3);
                     await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
                     usuario=await Usuario.findOne({email:input.email})
-                    .populate({path:"base_visto",match:{tipo:"visto"}})
-                    .populate({path:"doble_visto",match:{tipo:"doble_visto"}})
-                    .populate({path:"favorito",match:{tipo:"favorito"}})
+                    .populate("usuario_inmueble_base")
                     .populate({path:"agente_pagos",match:filter1,
                     populate:{path:"cuenta_banco"}})
                     .populate({path:"agente_pagos",match:filter1,
@@ -1092,9 +1082,10 @@ const resolvers={
         },
         actualizarInmuebleBase: async(_,{id_usuario,input_visto,input_doble_visto,input_favorito})=>{
             var fecha=new Date();
-            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"visto"},{input_visto,fecha_cache:fecha,fecha_ultimo_guardado:fecha});
-            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"doble_visto"},{input_doble_visto,fecha_cache:fecha,fecha_ultimo_guardado:fecha});
-            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"favorito"},{input_favorito,fecha_cache:fecha,fecha_ultimo_guardado:fecha})
+
+            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"visto"},input_visto,{fecha_cache:fecha,fecha_ultimo_guardado:fecha});
+            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"doble_visto"},input_doble_visto,{fecha_cache:fecha,fecha_ultimo_guardado:fecha});
+            await UsuarioInmuebleBase.findOneAndUpdate({usuario:id_usuario,tipo:"favorito"},input_favorito,{fecha_cache:fecha,fecha_ultimo_guardado:fecha})
             return "Se actualizó el inmueble base";
         },
         actualizarFechaInmuebleBase: async(_,{id,fecha})=>{
