@@ -38,6 +38,34 @@ const AdministradorInmuebleSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    fecha_solicitud_super_usuario:{
+        type: Date,
+        default: Date.now()
+    },
+    fecha_respuesta_super_usuario:{
+        type: Date,
+        default: Date.now()
+    },
+    respuesta_entregada_super_usuario:{
+        type:Boolean,
+        default:false
+    },
+    respuesta_super_usuario:{
+        type:String,
+        default:""
+    },
+    observaciones_super_usuario:{
+        type:String,
+        default:""
+    },
+    solicitud_terminada_super_usuario:{
+        type:Boolean,
+        default:false
+    },
+    super_usuario:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuario'
+    },
     inmueble: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Inmueble'

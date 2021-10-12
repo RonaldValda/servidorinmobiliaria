@@ -228,7 +228,7 @@ const resolvers={
             var filter1={};
             if(input1.ciudad!="Todos") filter1.ciudad={$in:input1.ciudad};
             if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
-            //filter1.autorizacion={$in:"Activo"};
+            filter1.autorizacion={$in:"Activo"};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
             //console.log("filtro....",filter1);
 
@@ -356,15 +356,7 @@ const resolvers={
             var filter1={};
             filter1.solicitud_terminada={$in:false};
             filter1.usuario_respondedor={$in:[null,id]};
-            //if(input1.autorizacion!="Todos") filter1.ciudad={$in:input1.ciudad};
-            //if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
-            //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
-            //console.log("filtro....",filter1);
             let administradorImmueble= AdministradorImmueble.find(filter1).sort({fecha_solicitud:1});
-            /*await administradorImmueble.find({}).populate({
-                path:"inmueble",populate:({path:"imagenes"}),populate:({path:"creador"})})
-                .populate({path:"usuario_solicitante"})
-                .populate({path:"usuario_respondedor"});*/
                 await administradorImmueble.find({}).populate({
                     path:"inmueble",populate:{path:"creador"}}).
                     populate({
@@ -379,7 +371,33 @@ const resolvers={
                         path:"inmueble",populate:{path:"propietario"}
                     })
                     .populate({path:"usuario_solicitante"})
-                    .populate({path:"usuario_respondedor"});
+                    .populate({path:"usuario_respondedor"})
+                    .populate({path:"super_usuario"});
+            
+            return administradorImmueble;
+        },
+        obtenerAdministradorInmuebleSuperUsuario: async (_,{id})=>{
+            var filter1={};
+            filter1.solicitud_terminada={$in:true};
+            filter1.super_usuario={$in:[null,id]};
+            filter1.solicitud_terminada_super_usuario={$in:false};
+            let administradorImmueble= AdministradorImmueble.find(filter1).sort({fecha_solicitud:1});
+                await administradorImmueble.find({}).populate({
+                    path:"inmueble",populate:{path:"creador"}}).
+                    populate({
+                        path: "inmueble",populate:{path:"imagenes"}
+                    })
+                    .populate({
+                        path: "inmueble",populate:{path:"comprobante",
+                        populate:{path:"cuenta_banco"}    
+                    }
+                    })
+                    .populate({
+                        path:"inmueble",populate:{path:"propietario"}
+                    })
+                    .populate({path:"usuario_solicitante"})
+                    .populate({path:"usuario_respondedor"})
+                    .populate({path:"super_usuario"});
             
             return administradorImmueble;
         },
@@ -389,8 +407,9 @@ const resolvers={
             //filter1.tipo_contrato=tipo_contrato;
             //filter1.solicitud_terminada={$in:false};
             //filter1.usuario_respondedor={$in:[null,id]};
-            var fecha=new Date();
-            fecha.setDate(fecha.getDate()-3);
+            //var fecha=new Date();
+            //fecha.setDate(fecha.getDate()-3);
+            var fecha="10-10-2021";
             filter1.fecha_solicitud={$gte:fecha};
             let administradorImmueble=AdministradorImmueble.find(filter1).sort({fecha_solicitud:1});
                 await administradorImmueble.find({}).populate({
@@ -419,16 +438,25 @@ const resolvers={
             
             return solicitudesAdministradores;
         },
+        obtenerSolicitudesAdministradoresSuperUsuario: async (_,{id})=>{
+            var filter1={};
+            filter1.administrador_inmueble=id;
+            filter1.solicitud_terminada={$in:true};
+            filter1.solicitud_terminada_super_usuario={$in:false};
+            const solicitudesAdministradores= SolicitudesAdministradores.find(filter1).sort({fecha_solicitud:1});
+            
+            return solicitudesAdministradores;
+        },
         obtenerSolicitudesUsuarios: async (_,{id})=>{
             var filter1={};
             filter1.usuario_respondedor=id;
             filter1.solicitud_terminada={$in:false};
+            filter1.solicitud_enviada={$in:true};
             let solicitudesUsuarios= SolicitudesUsuarios.find(filter1).sort({fecha_solicitud:1});
             await solicitudesUsuarios.find({}).populate({
                 path:"inmueble",populate:({path:"imagenes"})})
                 .populate({path:"inmueble",populate:({path:"creador"})})
-                .populate({path:"propietario"})
-                .populate({path:"imagenes"})
+                .populate({path:"inmueble",populate:({path:"propietario"})})
                 .populate({path:"usuario_solicitante"})
                 .populate({path:"usuario_respondedor"});
             return solicitudesUsuarios;
@@ -519,6 +547,10 @@ const resolvers={
         },
         obtenerZonas: async(_,{ciudad})=>{
             let zonas=await Zona.find({ciudad:ciudad});
+            var fecha=Date.parse('1991-09-12T10:20:30Z');
+            var fecha1=new Date();
+            console.log(fecha.toLocaleString());
+            console.log(fecha1);
             return zonas;     
         },
         obtener: async(_)=>{
@@ -1251,7 +1283,7 @@ const resolvers={
             let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
             
             var fecha=new Date();
-            if(input.tipo_solicitud=="Dar Alta"){
+            if(input.tipo_solicitud=="Dar alta"){
                 if(administradorInmueble.usuario_respondedor==null){
                     administradorInmueble.usuario_respondedor=id_respondedor;
                     
@@ -1266,6 +1298,9 @@ const resolvers={
             solicitudesAdministradores.observaciones=input.observaciones;
             solicitudesAdministradores.link_respaldo=input.link_respaldo;
             solicitudesAdministradores.solicitud_terminada=input.solicitud_terminada;
+            if(input.respuesta=="Confirmado"){
+                solicitudesAdministradores.fecha_solicitud_super_usuario=fecha;
+            }   
             await solicitudesAdministradores.save();
             let inmueble=await Inmueble.findById(administradorInmueble.inmueble);
             if(administradorInmueble.tipo_solicitud==solicitudesAdministradores.tipo_solicitud && administradorInmueble.fecha_solicitud.getDate()==solicitudesAdministradores.fecha_solicitud.getDate()){
@@ -1275,6 +1310,116 @@ const resolvers={
                 administradorInmueble.observaciones=input.observaciones;
                 administradorInmueble.link_respaldo=input.link_respaldo;
                 administradorInmueble.solicitud_terminada=input.solicitud_terminada;
+                
+                if(input.respuesta=="Confirmado"){
+                    administradorInmueble.fecha_solicitud_super_usuario=fecha;
+                    administradorInmueble.solicitud_terminada_super_usuario=false;
+                    administradorInmueble.respuesta_super_usuario="";
+                    administradorInmueble.observaciones_super_usuario="";
+                }
+                await administradorInmueble.save();
+                if(input.tipo_solicitud=="Dar alta"){
+                    if(input.respuesta=="Rechazado"){
+                        inmueble.autorizacion="Inactivo";
+                        await inmueble.save();
+                    }
+                }else if(input.tipo_solicitud=="Dar baja"){
+                    if(input.respuesta=="Rechazado"){
+                        inmueble.autorizacion="Activo";
+                        await inmueble.save();
+                    }
+                }else if(input.tipo_solicitud=="Modificar datos"){
+                    if(input.respuesta=="Rechazado"){
+                        inmueble.autorizacion="Inactivo";
+                        await inmueble.save();
+                    }
+                }else if(input.tipo_solicitud=="Vendido"){
+                    if(input.respuesta=="Confirmado"){
+                        const solicitudesUsuarios=SolicitudesUsuarios();
+                        solicitudesUsuarios.fecha_solicitud=fecha;
+                        solicitudesUsuarios.inmueble=administradorInmueble.inmueble;
+                        solicitudesUsuarios.usuario_solicitante=administradorInmueble.usuario_solicitante;
+                        solicitudesUsuarios.usuario_respondedor=id_comprador;
+                        solicitudesUsuarios.tipo_solicitud="Calificar";
+                        await solicitudesUsuarios.save();
+                        const solicitudesUsuariosPropietario=SolicitudesUsuarios();
+                        solicitudesUsuariosPropietario.fecha_solicitud=fecha;
+                        solicitudesUsuariosPropietario.inmueble=administradorInmueble.inmueble;
+                        solicitudesUsuariosPropietario.usuario_solicitante=administradorInmueble.usuario_solicitante;
+                        solicitudesUsuariosPropietario.usuario_respondedor=inmueble.propietario;
+                        solicitudesUsuariosPropietario.tipo_solicitud="Calificar";
+                        await solicitudesUsuariosPropietario.save();
+                    }else{
+                        inmueble.estado_negociacion="Negociaciones avanzadas";
+                        inmueble.ultima_modificacion=fecha;
+                        await inmueble.save();
+                    }
+                }
+                return "Registro concluido";
+            }else{
+                if(input.tipo_solicitud=="Dar alta"){
+                    if(input.respuesta=="Confirmado"){
+                    }
+                }else if(input.tipo_solicitud=="Dar baja"){
+                    if(input.respuesta=="Confirmado"){
+                        inmueble.ultima_modificacion=fecha;
+                        await inmueble.save();
+                    }
+                }else if(input.tipo_solicitud=="Modificar datos"){
+                    if(input.respuesta=="Confirmado"){
+                    }
+                }else if(input.tipo_solicitud=="Vendido"){
+                    if(input.respuesta=="Confirmado"){
+                        const solicitudesUsuarios=SolicitudesUsuarios();
+                        solicitudesUsuarios.fecha_solicitud=fecha;
+                        solicitudesUsuarios.inmueble=administradorInmueble.inmueble;
+                        solicitudesUsuarios.usuario_solicitante=administradorInmueble.usuario_solicitante;
+                        solicitudesUsuarios.usuario_respondedor=id_comprador;
+                        solicitudesUsuarios.tipo_solicitud="Calificar";
+                        await solicitudesUsuarios.save();
+                        const solicitudesUsuariosPropietario=SolicitudesUsuarios();
+                        solicitudesUsuariosPropietario.fecha_solicitud=fecha;
+                        solicitudesUsuariosPropietario.inmueble=administradorInmueble.inmueble;
+                        solicitudesUsuariosPropietario.usuario_solicitante=administradorInmueble.usuario_solicitante;
+                        solicitudesUsuariosPropietario.usuario_respondedor=inmueble.propietario;
+                        solicitudesUsuariosPropietario.tipo_solicitud="Calificar";
+                        await solicitudesUsuariosPropietario.save();
+                    }else{
+                        inmueble.estado_negociacion="Negociaciones avanzadas";
+                        inmueble.ultima_modificacion=fecha;
+                        await inmueble.save();
+                    }
+                }
+                return "Registro inconcluso";
+            }
+            
+        },
+        responderSolicitudAdministradorSuperUsuario: async (_,{id,id_super_usuario,id_solicitud,input})=>{
+            let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
+            
+            var fecha=new Date();
+            console.log(input.tipo_solicitud);
+            if(input.tipo_solicitud=="Dar alta"){
+                if(administradorInmueble.super_usuario==null){
+                    administradorInmueble.super_usuario=id_super_usuario;
+                    
+                }else{
+                    throw new Error('El inmueble está a cargo de otro super usuario');
+                }
+            }
+
+            let solicitudesAdministradores=await SolicitudesAdministradores.findOne({_id:id_solicitud});
+            solicitudesAdministradores.fecha_respuesta_super_usuario=fecha;
+            solicitudesAdministradores.respuesta_super_usuario=input.respuesta;
+            solicitudesAdministradores.observaciones_super_usuario=input.observaciones;
+            solicitudesAdministradores.solicitud_terminada_super_usuario=input.solicitud_terminada;
+            await solicitudesAdministradores.save();
+            let inmueble=await Inmueble.findById(administradorInmueble.inmueble);
+            if(administradorInmueble.tipo_solicitud==solicitudesAdministradores.tipo_solicitud && administradorInmueble.fecha_solicitud_super_usuario.getDate()==solicitudesAdministradores.fecha_solicitud_super_usuario.getDate()){
+                administradorInmueble.fecha_respuesta_super_usuario=fecha;
+                administradorInmueble.respuesta_super_usuario=input.respuesta;
+                administradorInmueble.observaciones_super_usuario=input.observaciones;
+                administradorInmueble.solicitud_terminada_super_usuario=input.solicitud_terminada;
                 await administradorInmueble.save();
                 if(input.tipo_solicitud=="Dar alta"){
                     if(input.respuesta=="Confirmado"){
@@ -1310,23 +1455,26 @@ const resolvers={
                         inmueble.estado_negociacion="Vendido";
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
-                        const solicitudesUsuarios=SolicitudesUsuarios();
-                        solicitudesUsuarios.fecha_solicitud=fecha;
-                        solicitudesUsuarios.inmueble=administradorInmueble.inmueble;
-                        solicitudesUsuarios.usuario_solicitante=administradorInmueble.usuario_solicitante;
-                        solicitudesUsuarios.usuario_respondedor=id_comprador;
-                        solicitudesUsuarios.tipo_solicitud="Calificar";
-                        await solicitudesUsuarios.save();
-                        const solicitudesUsuariosPropietario=SolicitudesUsuarios();
-                        solicitudesUsuariosPropietario.fecha_solicitud=fecha;
-                        solicitudesUsuariosPropietario.inmueble=administradorInmueble.inmueble;
-                        solicitudesUsuariosPropietario.usuario_solicitante=administradorInmueble.usuario_solicitante;
-                        solicitudesUsuariosPropietario.usuario_respondedor=inmueble.propietario;
-                        solicitudesUsuariosPropietario.tipo_solicitud="Calificar";
-                        await solicitudesUsuariosPropietario.saver();
+                        var filter={};
+                        filter.inmueble=inmueble.id;
+                        filter.solicitud_enviada=false;
+                        filter.usuario_solicitante=administradorInmueble.usuario_solicitante;
+                        filter.tipo_solicitud="Calificar";
+                        let update={
+                            $set:{
+                                solicitud_enviada:true
+                            }
+                        }
+                        let options={
+                            multi:true,
+                            upsert:false
+                        }
+                        console.log(filter.usuario_solicitante);
+                        await SolicitudesUsuarios.updateMany(filter,update,options);
                     }else{
                         inmueble.estado_negociacion="Negociaciones avanzadas";
                         inmueble.ultima_modificacion=fecha;
+                        await SolicitudesUsuarios.deleteMany({inmueble:inmueble.id,solicitud_enviada:false,usuario_solicitante:solicitudesAdministradores.usuario_solicitante,tipo_solicitud:"Calificar"});
                         await inmueble.save();
                     }
                 }
@@ -1354,17 +1502,26 @@ const resolvers={
                         inmueble.estado_negociacion="Vendido";
                         inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
-                        const solicitudesUsuarios=SolicitudesUsuarios();
-                        solicitudesUsuarios.fecha_solicitud=fecha;
-                        solicitudesUsuarios.inmueble=administradorInmueble.inmueble;
-                        solicitudesUsuarios.usuario_solicitante=administradorImmueble.usuario_solicitante;
-                        solicitudesUsuarios.usuario_respondedor=id_comprador;
-                        solicitudesUsuarios.tipo_solicitud="Calificar";
-                        console.log(solicitudesUsuarios.id);
-                        await solicitudesUsuarios.save();
+                        var filter={};
+                        filter.inmueble=inmueble.id;
+                        filter.solicitud_enviada=false;
+                        filter.usuario_solicitante=solicitudesAdministradores.usuario_solicitante;
+                        console.log(filter.usuario_solicitante);
+                        filter.tipo_solicitud="Calificar";
+                        let update={
+                            $set:{
+                                solicitud_enviada:true
+                            }
+                        }
+                        let options={
+                            multi:true,
+                            upsert:false
+                        }
+                        await SolicitudesUsuarios.updateMany(filter,update,options);
                     }else{
                         inmueble.estado_negociacion="Negociaciones avanzadas";
                         inmueble.ultima_modificacion=fecha;
+                        await SolicitudesUsuarios.deleteMany({inmueble:inmueble.id,solicitud_enviada:false,usuario_solicitante:solicitudesAdministradores.usuario_solicitante,tipo_solicitud:"Calificar"});
                         await inmueble.save();
                     }
                 }
@@ -1394,8 +1551,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=5;
-            var max=5;
+            var min=35;
+            var max=35;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1667,7 +1824,7 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.autorizacion="Activo";
+                inmueble.autorizacion="Pendiente";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
                 
@@ -1900,6 +2057,7 @@ const resolvers={
                 administradorInmueble.link_respaldo_respuesta="";
                 administradorInmueble.inmueble=inmueble.id;
                 administradorInmueble.usuario_solicitante=id_creador;
+
                 await administradorInmueble.save();
                 let solicitudesAdministradores=await SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;

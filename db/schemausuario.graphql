@@ -6,8 +6,10 @@
         obtenerUsuariosID(input: UsuarioIDInput) : [Usuario] 
         obtenerUsuarioFavorito(id:ID) : [UsuarioFavorito]
         obtenerAdministradorInmueble(id:ID):[AdministradorInmueble]
+        obtenerAdministradorInmuebleSuperUsuario(id:ID):[AdministradorInmueble]
         obtenerInmueblesSuperUsuario(ciudad:String,tipo_contrato:String):[AdministradorInmueble]
         obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
+        obtenerSolicitudesAdministradoresSuperUsuario(id:ID):[SolicitudesAdministradores]
         obtenerSolicitudesUsuarios(id:ID):[SolicitudesUsuarios]
         obtenerReportesInmueble(id_usuario:ID,id_inmueble:ID,estado_1:Boolean,estado_2:Boolean):[SolicitudesAdministradores]
         obtenerCuentasBancos:[CuentaBanco]
@@ -83,6 +85,7 @@
     type AdministradorInmueble{
         id:ID
         inmueble:Inmueble
+        super_usuario:Usuario
         usuario_solicitante:Usuario
         usuario_respondedor:Usuario
         fecha_solicitud:Date
@@ -93,6 +96,12 @@
         link_respaldo_solicitud:String
         link_respaldo_respuesta:String
         solicitud_terminada:Boolean
+        fecha_solicitud_super_usuario:Date
+        fecha_respuesta_super_usuario:Date
+        respuesta_entregada_super_usuario:Boolean
+        respuesta_super_usuario:String
+        observaciones_super_usuario:String
+        solicitud_terminada_super_usuario:Boolean
     }
     type SolicitudesAdministradores{
         id:ID
@@ -107,6 +116,12 @@
         link_respaldo_solicitud:String
         link_respaldo_respuesta:String
         solicitud_terminada:Boolean
+        fecha_solicitud_super_usuario:Date
+        fecha_respuesta_super_usuario:Date
+        respuesta_entregada_super_usuario:Boolean
+        respuesta_super_usuario:String
+        observaciones_super_usuario:String
+        solicitud_terminada_super_usuario:Boolean
     }
     type SolicitudesUsuarios{
         id:ID
@@ -278,6 +293,7 @@
         #registrarInmuebleFavorito(id_inmueble:ID, id_usuario:ID, input: UsuarioFavoritoInput) : String
         #registrarInmuebleBase(input: UsuarioInmuebleBaseInput): String
         responderSolicitudAdministrador(id:ID,id_respondedor:ID,id_comprador:ID,id_solicitud:ID,input:SolicitudesAdministradoresInput):String
+        responderSolicitudAdministradorSuperUsuario(id:ID,id_super_usuario:ID,id_solicitud:ID,input:SolicitudesAdministradoresInput):String
         responderSolicitudUsuarioCalificacion(id_solicitud:ID,calificacion:Int):String
         modificarEstadoInmuebleVendedor(id_inmueble:ID,tipo_accion:String):String
         #registrarBitacoraInmueble(id_inmueble:ID,id_usuario:ID,actividad:String):String
