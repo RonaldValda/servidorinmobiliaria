@@ -61,9 +61,9 @@ const UsuarioSchema = mongoose.Schema({
         default: 0
     },
     
-    agente_pagos:[{
+    membresia_pagos:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:'AgentePago',default:{}
+        ref:'MembresiaPago',default:{}
     }],
     usuario_inmueble_base: [{
         type: mongoose.Schema.Types.ObjectId,

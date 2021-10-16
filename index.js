@@ -5,6 +5,7 @@ require('dotenv').config('variables.env');
 //const typeDefs=require('./db/schema');
 //const typeDefsUsuario=('./db/schemausuario');
 const resolvers=require('./db/resolvers');
+const resolversSuperUsuario=require('./db/resolversSuperUsuario');
 const conectarDB=require('./config/db')
 const fs=require('fs')
 
@@ -15,10 +16,11 @@ const server=new ApolloServer({
     typeDefs:[
         gql(fs.readFileSync('./db/schema.graphql','utf8')),
         gql(fs.readFileSync('./db/schemausuario.graphql','utf8')),
+        gql(fs.readFileSync('./db/schemaSuperUsuario.graphql','utf8')),
         gql(fs.readFileSync('./db/schemaAgencia.graphql','utf8')),
         gql(fs.readFileSync('./db/schemaInmueble.graphql','utf8')),
     ],
-    resolvers:[resolvers],
+    resolvers:[resolvers,resolversSuperUsuario],
     context: ({req})=>{
         const token = req.headers['authorization']||'';
         if(token){

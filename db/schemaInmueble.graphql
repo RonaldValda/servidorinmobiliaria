@@ -1,5 +1,4 @@
 extend type Query {
-    obtenerInmuebles(input1: FiltroInmuebleInput): [Inmueble]
     obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :[Inmueble]
     obtenerInmueblesNuevos(input: ObtenerInmuebleNuevoInput): [Inmueble]
     obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
@@ -357,60 +356,32 @@ input UsuarioInmuebleBaseInput{
     tienda: Int
     amurallado_terreno: Int
 }
-
-
-input FiltroInmuebleInput{
-    tipo_inmueble: String
-    tipo_contrato: String
-    precio_min: Int
-    precio_max: Int
-    sup_terreno_min: Int
-    sup_terreno_max: Int
-    sup_construccion_min: Int
-    sup_construccion_max: Int
-    documentos_dia: Boolean
-    construccion_estrenar: Boolean
-    incluye_credito: Boolean
-    sin_construir: Boolean
-    tiempo_construccion_min: Int
-    tiempo_construccion_max: Int
-    inmueble_compartido: Boolean
-    numero_duenios: Int
-    numero_pisos: Int
-    sin_hipoteca: Boolean
-    numero_dormitorios: Int
-    numero_banios: Int
-    numero_garaje: Int
-    mascotas_permitidas: Boolean
-    lavanderia: Boolean
-    zona_lavadora: Boolean
-    churrasquero: Boolean
-    azotea: Boolean
-    cancha: Boolean
-    piscina: Boolean
-    sauna: Boolean
-    tienda: Boolean
-    estudio: Boolean
-    jardin: Boolean
-    balcon: Boolean
-    ascensor: Boolean
-    sotano: Boolean
-    deposito: Boolean
-    iglesia: Boolean
-    parque: Boolean
-    deportiva: Boolean
-    policial: Boolean
-    residencial: Boolean
-    estudiantil: Boolean
-    comercial: Boolean
-    verificados: Boolean
-    bienes_adjudicados: Boolean
-    remates_judiciales: Boolean
-    imagenes_2D: Boolean
-    video_2D: Boolean
-    tour_virtual: Boolean
-    video_tour: Boolean
-    id_usuario: String
+type InmuebleReportado{
+    id:ID
+    usuario_solicitante:Usuario
+    usuario_respondedor:Usuario
+    inmueble:Inmueble
+    vendido_multiples_lugares:Boolean
+    contenido_falso_imagen:Boolean
+    contenido_falso_texto:Boolean
+    contenido_inapropiado:Boolean
+    otro:Boolean
+    observaciones_solicitud:String
+    fecha_solicitud:Date
+    fecha_respuesta:Date
+    respuesta:String
+    observaciones_respuesta:String
+    respuesta_entregada:Boolean
+}
+input InmuebleReportadoInput{
+    vendido_multiples_lugares:Boolean
+    contenido_falso_imagen:Boolean
+    contenido_falso_texto:Boolean
+    contenido_inapropiado:Boolean
+    otro:Boolean
+    observaciones_solicitud:String
+    respuesta:String
+    observaciones_respuesta:String
 }
 input FiltroSimpleInmuebleInput{
     tipo_contrato: String
@@ -439,6 +410,8 @@ extend type Mutation {
     crearZona(input:ZonaInput):Zona
     modificarZona(id:ID,input:ZonaInput):Zona
     eliminarZona(id:ID):String
+    reportarInmueble(id_inmueble:ID,id_solicitante:ID,input:InmuebleReportadoInput) : InmuebleReportado
+    responderReporteInmueble(id_solicitud:ID,input:InmuebleReportadoInput) : InmuebleReportado
 }
 type Subscription {
     inmuebleAdded: Inmueble

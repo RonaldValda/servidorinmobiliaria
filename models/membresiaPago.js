@@ -1,12 +1,9 @@
 const mongoose = require('mongoose');
 
-const AgentePagoSchema = new mongoose.Schema({
+const MembresiaPagoSchema = new mongoose.Schema({
     fecha_solicitud:{
         type:Date,
         defaut:Date.now()
-    },
-    mes:{
-        type:Number
     },
     medio_pago:{
         type:String
@@ -14,8 +11,9 @@ const AgentePagoSchema = new mongoose.Schema({
     monto_pago:{
         type:Number,
     },
-    plan:{
-        type: Number
+    membresia_planes_pago:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MembresiaPlanesPago'
     },
     numero_transaccion:{
         type:String
@@ -47,6 +45,9 @@ const AgentePagoSchema = new mongoose.Schema({
     fecha_inicio:{
         type:Date
     },
+    fecha_final:{
+        type:Date
+    },
     activo:{
         type:Boolean,
         default:false
@@ -57,7 +58,7 @@ const AgentePagoSchema = new mongoose.Schema({
     motivo_cancelacion:{
         type:String
     },
-    agente: {
+    usuario: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
     },
@@ -66,4 +67,4 @@ const AgentePagoSchema = new mongoose.Schema({
         ref: 'Usuario'
     }
 });
-module.exports = mongoose.model('AgentePago', AgentePagoSchema);
+module.exports = mongoose.model('MembresiaPago', MembresiaPagoSchema);

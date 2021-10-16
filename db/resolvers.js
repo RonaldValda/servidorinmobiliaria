@@ -15,7 +15,7 @@ const AdministradorImmueble=require('../models/administradorInmueble');
 const BitacoraInmueble=require('../models/bitacoraInmueble');
 const CuentasBanco=require('../models/cuentasBanco');
 const AdministradorAgente=require('../models/administradorAgente');
-const AgentePago=require('../models/agentePago');
+const AgentePago=require('../models/membresiaPago');
 const PlanesPagoAgente=require("../models/planesPagoAgente");
 const transporter=require("../models/mailer");
 const EmailClaveVerificaciones=require('../models/emailClaveVerificaciones');
@@ -23,6 +23,10 @@ const VersionesAPP=require('../models/versionesAPP');
 const Zona=require('../models/zona');
 const InmuebleComprobante = require('../models/inmuebleComprobante'); 
 const RegistroAds = require('../models/registroAds'); 
+const InmuebleReportado = require('../models/inmuebleReportado'); 
+const PlanesPagoPublicacion = require('../models/planesPagoPublicacion'); 
+const InmuebleDarBaja = require('../models/inmuebleDarBaja');
+const InmuebleVendido = require('../models/inmuebleVendido');
 require('dotenv').config({path: 'variables.env'})
 //const { PubSub } = require('graphql-subscriptions')
 
@@ -71,6 +75,7 @@ const resolvers={
         },
         obtenerUsuarioEmail: async(_,{email})=>{
             const usuario=await Usuario.findOne({email:email});
+            usuario.abc="dadasd";
             //console.log("usuario", input.usuario);
             return usuario;
         },
@@ -78,117 +83,6 @@ const resolvers={
             const agencias=await Agencia.find();
             //console.log()
             return agencias;
-        },
-        obtenerInmuebles: async (_,{input1})=>{
-            var filter1={};
-            if(input1.tipo_inmueble!="Todos") filter1.tipo_inmueble={$in:input1.tipo_inmueble};
-            if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
-            //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
-            if(input1.precio_min<input1.precio_max) {
-                filter1.precio={$gte:input1.precio_min,$lte:input1.precio_max}
-            }else{
-                filter1.precio={$gte:input1.precio_min};
-            };
-
-            if(input1.sup_terreno_max>0) filter1.superficie_terreno={$gte:input1.sup_terreno_min,$lte:input1.sup_terreno_max};
-        
-            if(input1.sup_construccion_max>0) filter1.superficie_construccion={$gte:input1.sup_construccion_min,$lte:input1.sup_construccion_max};
-            if(input1.documentos_dia) filter1.documentos_dia={$in:input1.documentos_dia};
-
-            if(input1.construccion_estrenar) filter1.construccion_estrenar={$in:input1.construccion_estrenar};
-            if(input1.incluye_credito) filter1.incluye_credito={$in:input1.incluye_credito}; 
-            if(input1.sin_construir) filter1.sin_construir={$in:input1.sin_construir};
-            if(!input1.sin_construir){
-                if(input1.tiempo_construccion_max>0) filter1.tiempo_construccion={$gte:input1.tiempo_construccion_min,$lte:input1.tiempo_construccion_max};
-            }
-            if(input1.inmueble_compartido){
-                filter1.inmueble_compartido={$in:input1.inmueble_compartido};
-                if(input1.numero_duenios<5){
-                    filter1.numero_duenios={$in:input1.numero_duenios};
-                }else{
-                    filter1.numero_duenios={$gte:input1.numero_duenios}
-                }
-            }
-            if(input1.numero_pisos>0){
-                if(input1.numero_pisos<5){
-                    filter1.numero_pisos={$in:input1.numero_pisos};
-                }else{
-                    filter1.numero_pisos={$gte:input1.numero_pisos};
-                }
-            }
-            if(input1.sin_hipoteca) filter1.sin_hipoteca={$in:input1.sin_hipoteca};
-            if(input1.numero_dormitorios>0){
-                if(input1.numero_dormitorios<5){
-                    filter1.numero_dormitorios={$in:input1.numero_dormitorios};
-                }else{
-                    filter1.numero_dormitorios={$gte:input1.numero_dormitorios};
-                }
-            }
-            if(input1.numero_banios>0){
-                if(input1.numero_banios<5){
-                    filter1.numero_banios={$in:input1.numero_banios};
-                }else{
-                    filter1.numero_banios={$gte:input1.numero_banios};
-                }
-            }
-            if(input1.numero_garaje>0){
-                if(input1.numero_garaje<5){
-                    filter1.numero_garaje={$in:input1.numero_garaje};
-                }else{
-                    filter1.numero_garaje={$gte:input1.numero_garaje};
-                }
-            }
-            if(input1.mascotas_permitidas) filter1.mascotas_permitidas={$in:input1.mascotas_permitidas};
-            if(input1.lavanderia) filter1.lavanderia={$in:input1.lavanderia};
-            if(input1.zona_lavadora) filter1.zona_lavadora={$in:input1.zona_lavadora};
-            if(input1.churrasquero) filter1.churrasquero={$in:input1.churrasquero};
-            if(input1.azotea) filter1.azotea={$in:input1.azotea};
-            if(input1.cancha) filter1.cancha={$in:input1.cancha};
-            if(input1.piscina) filter1.piscina={$in:input1.piscina};
-            if(input1.sauna) filter1.sauna={$in:input1.sauna};
-            if(input1.tienda) filter1.tienda={$in:input1.tienda};
-            if(input1.estudio) filter1.estudio={$in:input1.estudio};
-            if(input1.jardin) filter1.jardin={$in:input1.jardin};
-            if(input1.balcon) filter1.balcon={$in:input1.balcon};
-            if(input1.ascensor) filter1.ascensor={$in:input1.ascensor};
-            if(input1.sotano) filter1.sotano={$in:input1.sotano};
-            if(input1.deposito) filter1.deposito={$in:input1.deposito};
-            if(input1.iglesia) filter1.iglesia={$in:input1.iglesia};
-            if(input1.parque) filter1.parque={$in:input1.parque};
-            if(input1.deportiva) filter1.deportiva={$in:input1.deportiva};
-            if(input1.policial) filter1.policial={$in:input1.policial};
-            if(input1.residencial) filter1.residencial={$in:input1.residencial};
-            if(input1.estudiantil) filter1.estudiantil={$in:input1.estudiantil};
-            if(input1.comercial) filter1.comercial={$in:input1.comercial};
-            if(input1.verificados) filter1.verificados={$in:input1.verificados};
-            if(input1.bienes_adjudicados) filter1.bienes_adjudicados={$in:input1.bienes_adjudicados};
-            if(input1.remates_judiciales) filter1.remates_judiciales={$in:input1.remates_judiciales};
-            if(input1.imagenes_2D) filter1.imagenes_2D_link={$nin:""};
-            if(input1.video_2D) filter1.video_2D_link={$nin:""};
-            if(input1.tour_virtual) filter1.tour_virtual_360_link={$nin:""};
-            if(input1.video_tour) filter1.video_tour_360_link={$nin:""};
-            //console.log("filtro....",filter1);
-
-            const inmuebles=Inmueble.find(filter1).sort({precio:1});
-            
-            filter1=({numero_banios:12});
-            //filter1.numero_banios={$in: 0};
-            filter1.numero_dormitorios={$in:11};
-            let filter2={};
-            console.log("id_usuario",input1.id_usuario);
-            filter2.usuario={$in:""};
-            if(input1.id_usuario!=""){
-                await inmuebles.find({}).populate("agencia",{})
-                .populate({
-                    path:"usuarios_favorito",match:{"usuario":input1.id_usuario},
-                    populate:{path:"usuario"}});
-            }else{
-                await inmuebles.find({}).populate("agencia",{})
-                .populate({
-                    path:"usuarios_favorito",match:{filter2},
-                    populate:{path:"usuario"}});
-            }
-            return inmuebles;
         },
         obtenerInmueblesNuevos: async (_,{input})=>{
             var filter1={};
@@ -434,7 +328,9 @@ const resolvers={
             var filter1={};
             filter1.administrador_inmueble=id;
             filter1.solicitud_terminada={$in:false};
-            const solicitudesAdministradores= SolicitudesAdministradores.find(filter1).sort({fecha_solicitud:1});
+            const solicitudesAdministradores= SolicitudesAdministradores.find(filter1).sort({fecha_solicitud:1})
+            .populate({path:"inmueble_dar_baja"})
+            .populate({path:"inmueble_vendido",populate:{path:"usuario_comprador"}});
             
             return solicitudesAdministradores;
         },
@@ -443,7 +339,9 @@ const resolvers={
             filter1.administrador_inmueble=id;
             filter1.solicitud_terminada={$in:true};
             filter1.solicitud_terminada_super_usuario={$in:false};
-            const solicitudesAdministradores= SolicitudesAdministradores.find(filter1).sort({fecha_solicitud:1});
+            const solicitudesAdministradores= await SolicitudesAdministradores.find(filter1).sort({fecha_solicitud:1})
+            .populate({path:"inmueble_dar_baja"})
+            .populate({path:"inmueble_vendido",populate:{path:"usuario_comprador"}});
             
             return solicitudesAdministradores;
         },
@@ -465,27 +363,7 @@ const resolvers={
             let cuentasBanco=CuentasBanco.find({});
             return cuentasBanco;
         },
-        obtenerAgentePagos: async(_,{id})=>{
-            var filter1={};
-            filter1.agente=id;
-            let agentePago=AgentePago.find(filter1).sort({mes:1});
-            await agentePago.find({})
-                .populate({path:"cuenta_banco"})
-                .populate({path:"agente"})
-                .populate({path:"administrador"});
-            return agentePago;
-        },
-        obtenerAgentePagosAdministrador: async(_,{id})=>{
-            var filter1={};
-            filter1.administrador={$in:[null,id]};
-            filter1.autorizacion="Pendiente";
-            let agentePago=AgentePago.find(filter1).sort({fecha_solicitud:1});
-            await agentePago.find({})
-                .populate({path:"cuenta_banco"})
-                .populate({path:"agente"})
-                .populate({path:"administrador"});
-            return agentePago;
-        },
+        
         obtenerPlanesPagoAgente: async(_)=>{
             var filter1={};
             filter1.activo=true;
@@ -506,12 +384,14 @@ const resolvers={
                 //fecha.setDate(fecha.getDate()-3);
                 await Usuario.findOneAndUpdate({email:email},{fecha_ultimo_ingreso:fecha})
                 usuario=await Usuario.findOne({email:email})
-                .populate({path:"usuario_inmueble_base"})
-                .populate({path:"agente_pagos",match:filter1,
+                .populate("usuario_inmueble_base")
+                .populate({path:"membresia_pagos",match:filter1,
                 populate:{path:"cuenta_banco"}})
-                .populate({path:"agente_pagos",match:filter1,
-                populate:{path:"agente"}})
-                .populate({path:"agente_pagos",match:filter1,
+                .populate({path:"membresia_pagos",match:filter1,
+                populate:{path:"usuario"}})
+                .populate({path:"membresia_pagos",
+                populate:{path:"membresia_planes_pago"}})
+                .populate({path:"membresia_pagos",match:filter1,
                 populate:{path:"administrador"}});
                 return usuario;
             }else if(imei!=""){
@@ -567,8 +447,17 @@ const resolvers={
             filter1.administrador_inmueble=administradorInmueble.id;
             let solicitudes=await SolicitudesAdministradores.find(filter1);
             return solicitudes;
+        },
+        obtenerNotificacionesSuperUsuario:async (_,{id})=>{
+            var filter={};
+            filter.usuario_respondedor=id;
+            filter.respuesta="";
+            filter.reportar_inmueble=await InmuebleReportado.find(filter)
+                                        .populate({path:"usuario_solicitante"})
+                                        .populate({path:"inmueble",populate:{path:"imagenes"}})
+                                        .populate({path:"inmueble",populate:{path:"creador"}});
+            return filter;
         }
-
     },
 
     /*Subscription: {
@@ -612,11 +501,13 @@ const resolvers={
                 
                 usuario=await Usuario.findOne({email:input.email})
                     .populate("usuario_inmueble_base")
-                    .populate({path:"agente_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",match:filter1,
                     populate:{path:"cuenta_banco"}})
-                    .populate({path:"agente_pagos",match:filter1,
-                    populate:{path:"agente"}})
-                    .populate({path:"agente_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",match:filter1,
+                    populate:{path:"usuario"}})
+                    .populate({path:"membresia_pagos",
+                    populate:{path:"membresia_planes_pago"}})
+                    .populate({path:"membresia_pagos",match:filter1,
                     populate:{path:"administrador"}});
                 return usuario;
                 
@@ -653,11 +544,13 @@ const resolvers={
                 }
                 usuario=await Usuario.findOne({email:input.email})
                 .populate("usuario_inmueble_base")
-                .populate({path:"agente_pagos",match:filter1,
+                .populate({path:"membresia_pagos",match:filter1,
                 populate:{path:"cuenta_banco"}})
-                .populate({path:"agente_pagos",match:filter1,
-                populate:{path:"agente"}})
-                .populate({path:"agente_pagos",match:filter1,
+                .populate({path:"membresia_pagos",match:filter1,
+                populate:{path:"usuario"}})
+                .populate({path:"membresia_pagos",
+                populate:{path:"membresia_planes_pago"}})
+                .populate({path:"membresia_pagos",match:filter1,
                 populate:{path:"administrador"}});
             }else{
                 if(!existeUsuario){
@@ -672,11 +565,13 @@ const resolvers={
                     await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
                     usuario=await Usuario.findOne({email:input.email})
                     .populate("usuario_inmueble_base")
-                    .populate({path:"agente_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",match:filter1,
                     populate:{path:"cuenta_banco"}})
-                    .populate({path:"agente_pagos",match:filter1,
-                    populate:{path:"agente"}})
-                    .populate({path:"agente_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",match:filter1,
+                    populate:{path:"usuario"}})
+                    .populate({path:"membresia_pagos",
+                    populate:{path:"membresia_planes_pago"}})
+                    .populate({path:"membresia_pagos",match:filter1,
                     populate:{path:"administrador"}});
                     
                     //await usuario.find({}).populate("usuario_inmueble_base",{});
@@ -908,6 +803,7 @@ const resolvers={
 
             return "Se guardaron los cambios";
         },
+
         actualizarInmueble: async(_,{id,input1,input2})=>{
             let modificar=true;
             let crearSolicitud=true; 
@@ -1127,9 +1023,10 @@ const resolvers={
            console.log(ff);
             return fec.toISOString();
         },
-        modificarEstadoInmuebleVendedor: async (_,{id_inmueble,tipo_accion})=>{
+        modificarEstadoInmuebleVendedor: async (_,{id_inmueble,tipo_accion,input_dar_baja,input_vendido})=>{
             let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
             let usuario=await Usuario.findById(administradorInmueble.usuario_solicitante);
+            
             let inmueble=await Inmueble.findById(id_inmueble);
             var fecha=new Date();
             if(tipo_accion=="Dar alta"){
@@ -1165,7 +1062,7 @@ const resolvers={
                 inmueble.calificacion=1;
                 await inmueble.save();
                 usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+1;
-                usuario.cantidad_inmuebles_calificados=usuario.cantidad_inmuebles_calificados+1;
+                usuario.cantidad_calificados=usuario.cantidad_calificados+1;
                 await usuario.save();
                 let bitacoraInmueble=await BitacoraInmueble();
                 bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
@@ -1178,6 +1075,12 @@ const resolvers={
                 inmueble.autorizacion="Pendiente";
                 inmueble.ultima_modificacion=fecha;
                 await inmueble.save();
+                let inmuebleDarBaja=InmuebleDarBaja();
+                inmuebleDarBaja.limite_contrato=input_dar_baja.limite_contrato;
+                inmuebleDarBaja.cancelacion_contrato=input_dar_baja.cancelacion_contrato;
+                inmuebleDarBaja.imagen_documento_propiedad=input_dar_baja.imagen_documento_propiedad;
+                inmuebleDarBaja.inmueble=inmueble.id;
+                await inmuebleDarBaja.save();
                 let solicitudesAdministradores=SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
                 solicitudesAdministradores.tipo_solicitud="Dar baja";
@@ -1185,6 +1088,7 @@ const resolvers={
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
                 solicitudesAdministradores.link_respaldo="";
+                solicitudesAdministradores.inmueble_dar_baja=inmuebleDarBaja.id;
                 await solicitudesAdministradores.save();
                 administradorInmueble.tipo_solicitud="Dar baja";
                 administradorInmueble.fecha_solicitud=fecha;
@@ -1206,7 +1110,7 @@ const resolvers={
                 inmueble.calificacion=3;
                 await inmueble.save();
                 usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+3;
-                usuario.cantidad_inmuebles_calificados=usuario.cantidad_inmuebles_calificados+1;
+                usuario.cantidad_calificados=usuario.cantidad_calificados+1;
                 await usuario.save();
                 let bitacoraInmueble=await BitacoraInmueble();
                 bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
@@ -1217,9 +1121,16 @@ const resolvers={
                 return bitacoraInmueble.actividad;
             }else if(tipo_accion=="Vendido y reportar"){
                 //inmueble.autorizacion="Pendiente";
+                
                 inmueble.estado_negociacion="Vendido";
                 inmueble.ultima_modificacion=fecha;
                 await inmueble.save();
+                let inmuebleVendido=InmuebleVendido();
+                inmuebleVendido.usuario_comprador=input_vendido.usuario_comprador;
+                inmuebleVendido.numero_testimonio=input_vendido.numero_testimonio;
+                inmuebleVendido.inmueble=inmueble.id;
+                await inmuebleVendido.save();
+                console.log("aqui");
                 let solicitudesAdministradores=SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
                 solicitudesAdministradores.tipo_solicitud="Vendido";
@@ -1227,6 +1138,7 @@ const resolvers={
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
                 solicitudesAdministradores.link_respaldo="";
+                solicitudesAdministradores.inmueble_vendido=inmuebleVendido.id;
                 await solicitudesAdministradores.save();
                 administradorInmueble.tipo_solicitud="Vendido";
                 administradorInmueble.fecha_solicitud=fecha;
@@ -1245,41 +1157,32 @@ const resolvers={
                 return bitacoraInmueble.actividad;
             }
         },
-        reportarInmueble: async(_,{id_inmueble,id_usuario,observaciones,tipo_reporte})=>{
+        reportarInmueble: async(_,{id_inmueble,id_solicitante,input})=>{      
             let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
-            let solicitudesAdministradores=await SolicitudesAdministradores.findOne({administrador_inmueble:administradorInmueble.id,usuario_solicitante:id_usuario,solicitud_terminada:false,tipo_solicitud:tipo_reporte});
             var fecha=new Date();
-            if(solicitudesAdministradores){
-                solicitudesAdministradores.observaciones=observaciones;
-                solicitudesAdministradores.fecha_solicitud=fecha;
-                await solicitudesAdministradores.save();
-                if(solicitudesAdministradores.usuario_solicitante=administradorInmueble.usuario_solicitante&& solicitudesAdministradores.tipo_solicitud==administradorInmueble.tipo_solicitud){
-                    administradorInmueble.observaciones=observaciones;
-                    administradorInmueble.fecha_solicitud=fecha;
-                    await administradorInmueble.save();
-                }
-            }else{
-                solicitudesAdministradores=SolicitudesAdministradores();
-                solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
-                solicitudesAdministradores.usuario_solicitante=id_usuario;
-                solicitudesAdministradores.observaciones=observaciones;
-                solicitudesAdministradores.tipo_solicitud=tipo_reporte;
-                solicitudesAdministradores.fecha_solicitud=fecha;
-                await solicitudesAdministradores.save();
-                administradorInmueble.fecha_solicitud=fecha;
-                administradorInmueble.usuario_solicitante=id_usuario;
-                administradorInmueble.observaciones=observaciones;
-                administradorInmueble.respuesta_entregada=false;
-                administradorInmueble.respuesta="";
-                administradorInmueble.tipo_solicitud=tipo_reporte;
-                administradorInmueble.solicitud_terminada=false;
-                administradorInmueble.link_respaldo_respuesta="";
-                administradorInmueble.link_respaldo_solicitud="";
-                await administradorInmueble.save();
-            }
-            return solicitudesAdministradores;
+            let inmuebleReportado=new InmuebleReportado(input);
+            inmuebleReportado.inmueble=id_inmueble;
+            inmuebleReportado.usuario_solicitante=id_solicitante;
+            inmuebleReportado.usuario_respondedor=administradorInmueble.super_usuario;
+            inmuebleReportado.fecha_solicitud=fecha;
+            await inmuebleReportado.save();
+
+            return inmuebleReportado;
         },
-        responderSolicitudAdministrador: async (_,{id,id_respondedor,id_comprador,id_solicitud,input})=>{
+        responderReporteInmueble: async(_,{id_solicitud,input})=>{      
+            var fecha=new Date();
+            console.log(id_solicitud);
+            let inmuebleReportado=await InmuebleReportado.findById(id_solicitud);
+            inmuebleReportado.respuesta=input.respuesta;
+            inmuebleReportado.fecha_respuesta=fecha;
+            inmuebleReportado.observaciones_respuesta=input.observaciones_respuesta;
+            let inmueble=await Inmueble.findById(inmuebleReportado.inmueble);
+            inmueble.autorizacion="Inactivo";
+            await inmuebleReportado.save();
+            await inmueble.save();
+            return inmuebleReportado;
+        },
+        responderSolicitudAdministrador: async (_,{id,id_respondedor,id_solicitud,input})=>{
             let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
             
             var fecha=new Date();
@@ -1335,11 +1238,14 @@ const resolvers={
                     }
                 }else if(input.tipo_solicitud=="Vendido"){
                     if(input.respuesta=="Confirmado"){
+                        const inmuebleVendido=await InmuebleVendido.findById(administradorInmueble.id);
                         const solicitudesUsuarios=SolicitudesUsuarios();
                         solicitudesUsuarios.fecha_solicitud=fecha;
                         solicitudesUsuarios.inmueble=administradorInmueble.inmueble;
                         solicitudesUsuarios.usuario_solicitante=administradorInmueble.usuario_solicitante;
-                        solicitudesUsuarios.usuario_respondedor=id_comprador;
+                        solicitudesUsuarios.usuario_respondedor=inmuebleVendido.usuario_comprador;
+                        console.log(solicitudesUsuarios.usuario_respondedor);
+                        console.log(inmuebleVendido.usuario_comprador);
                         solicitudesUsuarios.tipo_solicitud="Calificar";
                         await solicitudesUsuarios.save();
                         const solicitudesUsuariosPropietario=SolicitudesUsuarios();
@@ -1370,11 +1276,14 @@ const resolvers={
                     }
                 }else if(input.tipo_solicitud=="Vendido"){
                     if(input.respuesta=="Confirmado"){
+                        const inmuebleVendido=await InmuebleVendido.findById(administradorInmueble.id);
                         const solicitudesUsuarios=SolicitudesUsuarios();
                         solicitudesUsuarios.fecha_solicitud=fecha;
                         solicitudesUsuarios.inmueble=administradorInmueble.inmueble;
                         solicitudesUsuarios.usuario_solicitante=administradorInmueble.usuario_solicitante;
-                        solicitudesUsuarios.usuario_respondedor=id_comprador;
+                        solicitudesUsuarios.usuario_respondedor=inmuebleVendido.usuario_comprador;
+                        console.log(solicitudesUsuarios.usuario_respondedor);
+                        console.log(inmuebleVendido.usuario_comprador);
                         solicitudesUsuarios.tipo_solicitud="Calificar";
                         await solicitudesUsuarios.save();
                         const solicitudesUsuariosPropietario=SolicitudesUsuarios();
@@ -1551,8 +1460,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=35;
-            var max=35;
+            var min=15;
+            var max=15;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -2114,60 +2023,8 @@ const resolvers={
             administradorAgente.save();
             return "Se registró correctamente";
         },
-        registrarAgentePago: async(_,{input})=>{
-            let agentePago=new AgentePago(input);
-            var fecha=new Date();
-            agentePago.fecha_solicitud=fecha;
-            if(agentePago.medio_pago=="Tarjeta"){
-                agentePago.fecha_inicio=fecha;
-                agentePago.autorizacion="Aprobado";
-                agentePago.fecha_respuesta=fecha;
-                agentePago.respuesta_entregada=true;
-                agentePago.activo=true;
-            }
-            await agentePago.save();
-            let usuario=await Usuario.findById(agentePago.agente);
-            
-            usuario.agente_pagos.push(agentePago.id);
-            await usuario.save();
-            
-            var id=agentePago.id;
-            agentePago=await AgentePago.findById(id)
-                .populate("cuenta_banco")
-                .populate("agente")
-                .populate("administrador");
-            return agentePago;
-        },
-        responderAgentePago: async(_,{id,id_administrador,autorizacion,observaciones})=>{
-            let agentePago=await AgentePago.findById(id);
-            var fecha=new Date();
-            console.log(fecha);
-            if(agentePago.administrador==null){
-                if(autorizacion=="Rechazado"){
-                    agentePago.autorizacion="Rechazado";
-                    agentePago.observaciones=observaciones;
-                    agentePago.administrador=id_administrador;
-                    agentePago.fecha_respuesta=fecha;
-                }else{
-                    agentePago.autorizacion=autorizacion;
-                    agentePago.administrador=id_administrador;
-                    agentePago.fecha_respuesta=fecha;
-                    var fecha_inicio=Date.parse(agentePago.fecha_solicitud.toString());
-                    var fechad=new Date(agentePago.fecha_solicitud);
-                    console.log(fechad);
-                    fechad.setDate(fechad.getDate()+2);
-                    agentePago.fecha_inicio=fechad;
-                }
-            }else{
-                throw new Error ('La petición ya fue respondida por otro administrador');
-            }
-            await agentePago.save();
-            agentePago=await AgentePago.findById(id)
-                .populate("cuenta_banco")
-                .populate("agente")
-                .populate("administrador");
-            return agentePago;
-        },
+        
+        
         registrarPlanesPagoAgente: async(_,{input})=>{
             let emailStatus="OK";
             let planesPagoAgente=new PlanesPagoAgente(input);
@@ -2186,6 +2043,11 @@ const resolvers={
                 emailStatus=error;
                 console.log(error);
             }*/
+            return "Se registró correctamente";
+        },
+        registrarPlanesPagoPublicacion: async(_,{input})=>{
+            let planesPagoPublicaiones=PlanesPagoPublicacion(input);
+            await planesPagoPublicaiones.save();
             return "Se registró correctamente";
         },
         registrarEmailClaveVerificaciones: async(_,{input,actividad})=>{

@@ -68,6 +68,14 @@ const SolicitudesAdministradoresSchema = new mongoose.Schema({
     administrador_inmueble: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'AdministradorInmueble'
-    }
+    },
+    inmueble_dar_baja: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'InmuebleDarBaja'
+    },
+    inmueble_vendido: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'InmuebleVendido'
+    },
 });
 module.exports = mongoose.model('SolicitudesAdministradores', SolicitudesAdministradoresSchema);

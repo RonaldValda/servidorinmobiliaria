@@ -1,0 +1,22 @@
+extend type Query{
+    obtenerMembresiaPlanesPago:[MembresiaPlanesPago]
+}
+type MembresiaPlanesPago{
+    id:ID
+    nombre_plan:String
+    unidad_medida_tiempo:String
+    tiempo:Int
+    costo:Int
+    activo:Boolean
+}
+input MembresiaPlanesPagoInput{
+    nombre_plan:String
+    unidad_medida_tiempo:String
+    tiempo:Int
+    costo:Int
+    activo:Boolean
+}
+extend type Mutation{
+    registrarMembresiaPlanesPago(input:MembresiaPlanesPagoInput):MembresiaPlanesPago
+    modificarMembresiaPlanesPago(id:ID,input:MembresiaPlanesPagoInput):String
+}
