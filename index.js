@@ -5,7 +5,10 @@ require('dotenv').config('variables.env');
 //const typeDefs=require('./db/schema');
 //const typeDefsUsuario=('./db/schemausuario');
 const resolvers=require('./db/resolvers');
-const resolversSuperUsuario=require('./db/resolversSuperUsuario');
+const resolversUsuario=require('./module_usuario/db/resolvers/resolverUsuario');
+const resolversSuperUsuario=require('./module_usuario/db/resolvers/resolversSuperUsuario');
+const pathSchemaSuperUsuario='./module_usuario/db/schema/schemaSuperUsuario.graphql';
+const pathSchemaUsuario='./module_usuario/db/schema/schemausuario.graphql';
 const conectarDB=require('./config/db')
 const fs=require('fs')
 
@@ -15,12 +18,12 @@ conectarDB();
 const server=new ApolloServer({
     typeDefs:[
         gql(fs.readFileSync('./db/schema.graphql','utf8')),
-        gql(fs.readFileSync('./db/schemausuario.graphql','utf8')),
-        gql(fs.readFileSync('./db/schemaSuperUsuario.graphql','utf8')),
+        gql(fs.readFileSync(pathSchemaUsuario,'utf8')),
+        gql(fs.readFileSync(pathSchemaSuperUsuario,'utf8')),
         gql(fs.readFileSync('./db/schemaAgencia.graphql','utf8')),
         gql(fs.readFileSync('./db/schemaInmueble.graphql','utf8')),
     ],
-    resolvers:[resolvers,resolversSuperUsuario],
+    resolvers:[resolvers,resolversSuperUsuario,resolversUsuario],
     context: ({req})=>{
         const token = req.headers['authorization']||'';
         if(token){

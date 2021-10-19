@@ -19,7 +19,7 @@
         obtenerVersionesAPP:VersionesAPP
         obtener:[RegistroAds]
         obtenerNotificacionesSuperUsuario(id:ID):NotificacionesSuperUsuario
-
+        obtenerUsuarioInmueblesBuscados(id:ID):[UsuarioInmuebleBuscado]
     }
 
     input UsuarioIDInput {
@@ -320,7 +320,160 @@
         monto:Int
         activo:Boolean
     }
-    
+    type UsuarioInmuebleBuscado{
+        id:ID
+        nombre_configuracion:String
+        tipo_contrato:String
+        tipo_inmueble:String
+        ciudad:String
+        zona:String
+        plantas:Int
+        ambientes:Int
+        dormitorios: Int
+        banios: Int
+        garaje: Int
+        superficie_terreno_min: Int
+        superficie_terreno_max: Int
+        superficie_construccion_min: Int
+        superficie_construccion_max: Int
+        antiguedad_construccion_min: Int
+        antiguedad_construccion_max: Int
+        tamanio_frente_min:Int
+        tamanio_frente_max:Int
+        precio_min: Int
+        precio_max: Int
+        mascotas_permitidas:Boolean
+        sin_hipoteca:Boolean
+        construccion_estrenar:Boolean
+        materiales_primera:Boolean
+        proyecto_preventa:Boolean
+        inmueble_compartido:Boolean
+        numero_duenios:Int
+        servicios_basicos:Boolean
+        gas_domiciliario:Boolean
+        wifi:Boolean
+        medidor_independiente:Boolean
+        termotanque:Boolean
+        calle_asfaltada:Boolean
+        transporte:Boolean
+        preparado_discapacidad:Boolean
+        papeles_orden:Boolean
+        habilitado_credito:Boolean
+        amoblado: Boolean
+        lavanderia: Boolean
+        cuarto_lavado: Boolean
+        churrasquero: Boolean
+        azotea: Boolean
+        condominio_privado: Boolean
+        cancha: Boolean
+        piscina: Boolean
+        sauna: Boolean
+        jacuzzi: Boolean
+        estudio: Boolean
+        jardin: Boolean
+        porton_electrico: Boolean
+        aire_acondicionado: Boolean
+        calefaccion: Boolean
+        ascensor: Boolean
+        deposito: Boolean
+        sotano: Boolean
+        balcon: Boolean
+        tienda: Boolean
+        amurallado_terreno: Boolean
+        iglesia:Boolean
+        parque_infantil:Boolean
+        escuela:Boolean
+        universidad:Boolean
+        plazuela:Boolean
+        modulo_policial:Boolean
+        sauna_piscina_publica:Boolean
+        gym_publico:Boolean
+        centro_deportivo:Boolean
+        puesto_salud:Boolean
+        zona_comercial:Boolean
+        remates_judiciales:Boolean
+        imagenes_2D:Boolean
+        video_2D:Boolean
+        tour_virtual_360:Boolean
+        video_tour_360:Boolean
+        usuario:ID
+    }
+    input UsuarioInmuebleBuscadoInput{
+        nombre_configuracion:String
+        tipo_contrato:String
+        tipo_inmueble:String
+        ciudad:String
+        zona:String
+        plantas:Int
+        ambientes:Int
+        dormitorios: Int
+        banios: Int
+        garaje: Int
+        superficie_terreno_min: Int
+        superficie_terreno_max: Int
+        superficie_construccion_min: Int
+        superficie_construccion_max: Int
+        antiguedad_construccion_min: Int
+        antiguedad_construccion_max: Int
+        tamanio_frente_min:Int
+        tamanio_frente_max:Int
+        precio_min: Int
+        precio_max: Int
+        mascotas_permitidas:Boolean
+        sin_hipoteca:Boolean
+        construccion_estrenar:Boolean
+        materiales_primera:Boolean
+        proyecto_preventa:Boolean
+        inmueble_compartido:Boolean
+        numero_duenios:Int
+        servicios_basicos:Boolean
+        gas_domiciliario:Boolean
+        wifi:Boolean
+        medidor_independiente:Boolean
+        termotanque:Boolean
+        calle_asfaltada:Boolean
+        transporte:Boolean
+        preparado_discapacidad:Boolean
+        papeles_orden:Boolean
+        habilitado_credito:Boolean
+        amoblado: Boolean
+        lavanderia: Boolean
+        cuarto_lavado: Boolean
+        churrasquero: Boolean
+        azotea: Boolean
+        condominio_privado: Boolean
+        cancha: Boolean
+        piscina: Boolean
+        sauna: Boolean
+        jacuzzi: Boolean
+        estudio: Boolean
+        jardin: Boolean
+        porton_electrico: Boolean
+        aire_acondicionado: Boolean
+        calefaccion: Boolean
+        ascensor: Boolean
+        deposito: Boolean
+        sotano: Boolean
+        balcon: Boolean
+        tienda: Boolean
+        amurallado_terreno: Boolean
+        iglesia:Boolean
+        parque_infantil:Boolean
+        escuela:Boolean
+        universidad:Boolean
+        plazuela:Boolean
+        modulo_policial:Boolean
+        sauna_piscina_publica:Boolean
+        gym_publico:Boolean
+        centro_deportivo:Boolean
+        puesto_salud:Boolean
+        zona_comercial:Boolean
+        remates_judiciales:Boolean
+        imagenes_2D:Boolean
+        video_2D:Boolean
+        tour_virtual_360:Boolean
+        video_tour_360:Boolean
+    }
     extend type Mutation {
         crearModificarUsuario(input: AutenticarInput,actividad:String) : Usuario
         autenticarUsuario(input: AutenticarInput) : Usuario
@@ -345,4 +498,6 @@
         
         actualizarInmuebleBase(id_usuario:ID,input_visto:UsuarioInmuebleBaseInput,input_doble_visto:UsuarioInmuebleBaseInput,input_favorito:UsuarioInmuebleBaseInput): String
         registrarPlanesPagoPublicacion(input:PlanesPagoPublicacionInput):String
+        registrarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):UsuarioInmuebleBuscado
+        modificarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):String
     }

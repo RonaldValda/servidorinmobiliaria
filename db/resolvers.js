@@ -385,13 +385,13 @@ const resolvers={
                 await Usuario.findOneAndUpdate({email:email},{fecha_ultimo_ingreso:fecha})
                 usuario=await Usuario.findOne({email:email})
                 .populate("usuario_inmueble_base")
-                .populate({path:"membresia_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"cuenta_banco"}})
-                .populate({path:"membresia_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"usuario"}})
                 .populate({path:"membresia_pagos",
                 populate:{path:"membresia_planes_pago"}})
-                .populate({path:"membresia_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"administrador"}});
                 return usuario;
             }else if(imei!=""){
@@ -406,21 +406,21 @@ const resolvers={
                 }
                 usuario=await Usuario.findOne({imei_telefono:imei})
                     .populate("usuario_inmueble_base")
-                    .populate({path:"agente_pagos",
+                    .populate({path:"membresia_pagos",
                     populate:{path:"cuenta_banco"}})
-                    .populate({path:"agente_pagos",
+                    .populate({path:"membresia_pagos",
                     populate:{path:"agente"}})
-                    .populate({path:"agente_pagos",
+                    .populate({path:"membresia_pagos",
                     populate:{path:"administrador"}});
                 return usuario;
             }else{
                 usuario=await Usuario.findOne({email:""})
                 .populate("usuario_inmueble_base")
-                .populate({path:"agente_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"cuenta_banco"}})
-                .populate({path:"agente_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"agente"}})
-                .populate({path:"agente_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"administrador"}});
                 return usuario;
             }
@@ -544,13 +544,13 @@ const resolvers={
                 }
                 usuario=await Usuario.findOne({email:input.email})
                 .populate("usuario_inmueble_base")
-                .populate({path:"membresia_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"cuenta_banco"}})
-                .populate({path:"membresia_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"usuario"}})
                 .populate({path:"membresia_pagos",
                 populate:{path:"membresia_planes_pago"}})
-                .populate({path:"membresia_pagos",match:filter1,
+                .populate({path:"membresia_pagos",
                 populate:{path:"administrador"}});
             }else{
                 if(!existeUsuario){
@@ -565,13 +565,13 @@ const resolvers={
                     await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
                     usuario=await Usuario.findOne({email:input.email})
                     .populate("usuario_inmueble_base")
-                    .populate({path:"membresia_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",
                     populate:{path:"cuenta_banco"}})
-                    .populate({path:"membresia_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",
                     populate:{path:"usuario"}})
                     .populate({path:"membresia_pagos",
                     populate:{path:"membresia_planes_pago"}})
-                    .populate({path:"membresia_pagos",match:filter1,
+                    .populate({path:"membresia_pagos",
                     populate:{path:"administrador"}});
                     
                     //await usuario.find({}).populate("usuario_inmueble_base",{});
@@ -1460,8 +1460,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=15;
-            var max=15;
+            var min=150;
+            var max=150;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1733,7 +1733,7 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.autorizacion="Pendiente";
+                inmueble.autorizacion="Activo";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
                 

@@ -1,4 +1,4 @@
-const MembresiaPlanesPago = require('../models/membresiaPlanesPago');
+const MembresiaPlanesPago = require('../../../models/membresiaPlanesPago');
 const resolversSuperUsuario={
     Query:{
         obtenerMembresiaPlanesPago: async(_,{})=>{
