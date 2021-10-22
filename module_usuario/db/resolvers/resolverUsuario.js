@@ -2,6 +2,9 @@ const MembresiaPlanesPago = require('../../../models/membresiaPlanesPago');
 const MembresiaPago=require('../../../models/membresiaPago');
 const Usuario = require('../../../models/usuario');
 const UsuarioInmuebleBuscado = require('../../models/usuarioInmuebleBuscado');
+const InmuebleQueja=require('../../../module_inmueble/models/inmuebleQueja');
+const SolicitudesAdministradores=require('../../../models/solicitudesAdministradores');
+const AdministradorInmueble=require('../../../models/administradorInmueble');
 const resolversUsuario={
     Query:{
         obtenerMembresiaPagos: async(_,{id})=>{
@@ -32,6 +35,24 @@ const resolversUsuario={
             let usuarioInmuebleBuscado=await UsuarioInmuebleBuscado.find(filter1);
             return usuarioInmuebleBuscado;
         },
+        obtenerNotificacionesAccionesVendedor:async (_,{id_inmueble})=>{
+            var filter={};
+            filter.inmueble=id_inmueble;
+            
+            var resultado={};
+            const administradorInmueble=await AdministradorInmueble.findOne(filter)
+                                        .populate({path:"usuario_respondedor"})
+                                        .populate({path:"super_usuario"});
+            resultado.inmueble_queja=await InmuebleQueja.find(filter)
+                                        .populate({path:"usuario_respondedor"});
+            filter={};
+            filter.administrador_inmueble=administradorInmueble.id;
+            resultado.solicitudes_administradores=await SolicitudesAdministradores.find(filter)
+                                        .populate({path:"inmueble_vendido",populate:{path:"usuario_comprador"}})
+                                        .populate({path:"inmueble_dar_baja"});
+            resultado.administrador_inmueble=administradorInmueble;
+            return resultado;
+        }
     },
     Mutation:{
         registrarMembresiaPago: async(_,{input})=>{
@@ -82,16 +103,7 @@ const resolversUsuario={
                     membresia.autorizacion=autorizacion;
                     membresia.administrador=id_administrador;
                     membresia.fecha_respuesta=fecha;
-                    var fechaInicio=new Date(membresia.fecha_solicitud);
-                    fechaInicio.setDate(fechaInicio.getDate()+2);
-                    membresia.fecha_inicio=fechaInicio;
-                    fechaFinal.setDate(fechaInicio.getDate());
-                    if(membresiaPlanesPago.unidad_medida_tiempo=="Meses"){
-                        fechaFinal.setMonth(fechaFinal.getMonth()+membresiaPlanesPago.tiempo);
-                    }else{
-                        fechaFinal.setDate(fechaFinal.getDate()+membresiaPlanesPago.tiempo);
-                    }
-                    membresia.fecha_final=fechaFinal;
+                    membresia.fecha_solicitud_super_usuario=fecha;
                 }
             }else{
                 throw new Error ('La petición ya fue respondida por otro administrador');
@@ -100,8 +112,7 @@ const resolversUsuario={
             membresia=await MembresiaPago.findById(id)
                 .populate({path:"membresia_planes_pago"})
                 .populate("cuenta_banco")
-                .populate("usuario")
-                .populate("administrador");
+                .populate("usuario");
             return membresia;
         },
         registrarMembresiaPlanesPago: async(_,{input})=>{

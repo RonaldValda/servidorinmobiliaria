@@ -383,6 +383,28 @@ input InmuebleReportadoInput{
     respuesta:String
     observaciones_respuesta:String
 }
+type InmuebleQueja{
+    id:ID
+    usuario_respondedor:Usuario
+    inmueble:Inmueble
+    sin_respuesta:Boolean
+    rechazado_sin_justificacion:Boolean
+    otro:Boolean
+    observaciones_solicitud:String
+    fecha_solicitud:Date
+    fecha_respuesta:Date
+    respuesta:String
+    observaciones_respuesta:String
+    respuesta_entregada:Boolean
+}
+input InmuebleQuejaInput{
+    sin_respuesta:Boolean
+    rechazado_sin_justificacion:Boolean
+    otro:Boolean
+    observaciones_solicitud:String
+    respuesta:String
+    observaciones_respuesta:String
+}
 input FiltroSimpleInmuebleInput{
     tipo_contrato: String
     ciudad: String
@@ -411,7 +433,9 @@ extend type Mutation {
     modificarZona(id:ID,input:ZonaInput):Zona
     eliminarZona(id:ID):String
     reportarInmueble(id_inmueble:ID,id_solicitante:ID,input:InmuebleReportadoInput) : InmuebleReportado
-    responderReporteInmueble(id_solicitud:ID,input:InmuebleReportadoInput) : InmuebleReportado
+    
+    registrarInmuebleQueja(id_inmueble:ID,input:InmuebleQuejaInput):InmuebleQueja
+    responderInmuebleQueja(id_solicitud:ID,input:InmuebleQuejaInput):InmuebleQueja
 }
 type Subscription {
     inmuebleAdded: Inmueble

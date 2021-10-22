@@ -42,6 +42,26 @@ const MembresiaPagoSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
+    fecha_solicitud_super_usuario:{
+        type: Date,
+        default: Date.now()
+    },
+    fecha_respuesta_super_usuario:{
+        type: Date,
+        default: Date.now()
+    },
+    respuesta_entregada_super_usuario:{
+        type:Boolean,
+        default:false
+    },
+    autorizacion_super_usuario:{
+        type:String,
+        default:"Pendiente"
+    },
+    observaciones_super_usuario:{
+        type:String,
+        default:""
+    },
     fecha_inicio:{
         type:Date
     },
@@ -58,6 +78,7 @@ const MembresiaPagoSchema = new mongoose.Schema({
     motivo_cancelacion:{
         type:String
     },
+    
     usuario: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
@@ -65,6 +86,10 @@ const MembresiaPagoSchema = new mongoose.Schema({
     administrador:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
-    }
+    },
+    super_usuario: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuario'
+    },
 });
 module.exports = mongoose.model('MembresiaPago', MembresiaPagoSchema);

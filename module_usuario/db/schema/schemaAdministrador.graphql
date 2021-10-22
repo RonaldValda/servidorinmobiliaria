@@ -1,0 +1,8 @@
+extend type Query{
+    obtenerMembresiaPagosAdministrador(id:ID):[MembresiaPago]
+    obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
+}
+extend type Mutation{
+    responderMembresiaPago(id:ID,id_administrador:ID,autorizacion:String,observaciones:String) : MembresiaPago
+    responderSolicitudAdministrador(id:ID,id_respondedor:ID,id_solicitud:ID,input:SolicitudesAdministradoresInput):String
+}

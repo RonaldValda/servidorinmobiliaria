@@ -1,0 +1,17 @@
+type Ciudad{
+    id:ID
+    nombre_ciudad:String
+    departamento:ID
+}
+type Departamento{
+    id:ID
+    nombre_departamento:String
+}
+extend type Mutation{
+    registrarCiudad(id_departamento:ID,nombre_ciudad:String):Ciudad
+    modificarCiudad(id:ID,nombre_ciudad:String):String
+    eliminarCiudad(id:ID):String
+    registrarDepartamento(nombre_departamento:String):Departamento
+    modificarDepartamento(id:ID,nombre_departamento:String):String
+    eliminarDepartamento(id:ID):String
+}

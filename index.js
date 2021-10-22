@@ -9,6 +9,7 @@ const resolversUsuario=require('./module_usuario/db/resolvers/resolverUsuario');
 const resolversSuperUsuario=require('./module_usuario/db/resolvers/resolversSuperUsuario');
 const pathSchemaSuperUsuario='./module_usuario/db/schema/schemaSuperUsuario.graphql';
 const pathSchemaUsuario='./module_usuario/db/schema/schemausuario.graphql';
+const pathSchemaAdministrador='./module_usuario/db/schema/schemaAdministrador.graphql';
 const conectarDB=require('./config/db')
 const fs=require('fs')
 
@@ -19,6 +20,7 @@ const server=new ApolloServer({
     typeDefs:[
         gql(fs.readFileSync('./db/schema.graphql','utf8')),
         gql(fs.readFileSync(pathSchemaUsuario,'utf8')),
+        gql(fs.readFileSync(pathSchemaAdministrador,'utf8')),
         gql(fs.readFileSync(pathSchemaSuperUsuario,'utf8')),
         gql(fs.readFileSync('./db/schemaAgencia.graphql','utf8')),
         gql(fs.readFileSync('./db/schemaInmueble.graphql','utf8')),

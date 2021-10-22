@@ -27,6 +27,7 @@ const InmuebleReportado = require('../models/inmuebleReportado');
 const PlanesPagoPublicacion = require('../models/planesPagoPublicacion'); 
 const InmuebleDarBaja = require('../models/inmuebleDarBaja');
 const InmuebleVendido = require('../models/inmuebleVendido');
+const InmuebleQueja=require('../module_inmueble/models/inmuebleQueja');
 require('dotenv').config({path: 'variables.env'})
 //const { PubSub } = require('graphql-subscriptions')
 
@@ -66,11 +67,6 @@ const resolvers={
         obtenerUsuarios: async(_,{})=>{
             const usuarios=await Usuario.find();
             //console.log()
-            return usuarios;
-        },
-        obtenerUsuariosID: async(_,{input})=>{
-            const usuarios=await Usuario.find().where('nombre').equals(input.nombre);
-            //console.log("usuario", input.usuario);
             return usuarios;
         },
         obtenerUsuarioEmail: async(_,{email})=>{
@@ -448,16 +444,7 @@ const resolvers={
             let solicitudes=await SolicitudesAdministradores.find(filter1);
             return solicitudes;
         },
-        obtenerNotificacionesSuperUsuario:async (_,{id})=>{
-            var filter={};
-            filter.usuario_respondedor=id;
-            filter.respuesta="";
-            filter.reportar_inmueble=await InmuebleReportado.find(filter)
-                                        .populate({path:"usuario_solicitante"})
-                                        .populate({path:"inmueble",populate:{path:"imagenes"}})
-                                        .populate({path:"inmueble",populate:{path:"creador"}});
-            return filter;
-        }
+        
     },
 
     /*Subscription: {
@@ -1166,21 +1153,19 @@ const resolvers={
             inmuebleReportado.usuario_respondedor=administradorInmueble.super_usuario;
             inmuebleReportado.fecha_solicitud=fecha;
             await inmuebleReportado.save();
-
             return inmuebleReportado;
         },
-        responderReporteInmueble: async(_,{id_solicitud,input})=>{      
+        
+        registrarInmuebleQueja: async(_,{id_inmueble,input})=>{
+            let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
             var fecha=new Date();
-            console.log(id_solicitud);
-            let inmuebleReportado=await InmuebleReportado.findById(id_solicitud);
-            inmuebleReportado.respuesta=input.respuesta;
-            inmuebleReportado.fecha_respuesta=fecha;
-            inmuebleReportado.observaciones_respuesta=input.observaciones_respuesta;
-            let inmueble=await Inmueble.findById(inmuebleReportado.inmueble);
-            inmueble.autorizacion="Inactivo";
-            await inmuebleReportado.save();
-            await inmueble.save();
-            return inmuebleReportado;
+            let inmuebleQueja=new InmuebleQueja(input);
+            inmuebleQueja.inmueble=id_inmueble;
+            console.log(administradorInmueble.super_usuario);
+            inmuebleQueja.usuario_respondedor=administradorInmueble.super_usuario;
+            inmuebleQueja.fecha_solicitud=fecha;
+            await inmuebleQueja.save();
+            return inmuebleQueja;
         },
         responderSolicitudAdministrador: async (_,{id,id_respondedor,id_solicitud,input})=>{
             let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
@@ -1460,8 +1445,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=150;
-            var max=150;
+            var min=10;
+            var max=10;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1733,7 +1718,7 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.autorizacion="Activo";
+                inmueble.autorizacion="Pendiente";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
                 
