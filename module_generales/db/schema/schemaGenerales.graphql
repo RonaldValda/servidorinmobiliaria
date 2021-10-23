@@ -1,11 +1,25 @@
 type Ciudad{
     id:ID
     nombre_ciudad:String
-    departamento:ID
+    departamento:Departamento
 }
 type Departamento{
     id:ID
     nombre_departamento:String
+}
+input ZonaInput{
+    nombre_zona:String
+    coordenadas:[Float]
+}
+type Zona{
+    id:ID
+    nombre_zona:String
+    coordenadas:[Float]
+    ciudad:ID
+}
+type generalesLugares{
+    zonas:[Zona]
+    ciudades:[Ciudad]
 }
 extend type Mutation{
     registrarCiudad(id_departamento:ID,nombre_ciudad:String):Ciudad
@@ -14,4 +28,13 @@ extend type Mutation{
     registrarDepartamento(nombre_departamento:String):Departamento
     modificarDepartamento(id:ID,nombre_departamento:String):String
     eliminarDepartamento(id:ID):String
+    registrarZona(id_ciudad:ID,input:ZonaInput):Zona
+    modificarZona(id:ID,input:ZonaInput):String
+    eliminarZona(id:ID):String
+}
+extend type Query{
+    obtenerDepartamentos:[Departamento]
+    obtenerCiudades(id_departamento:ID):[Ciudad]
+    obtenerZonas(id_ciudad:ID):[Zona]
+    obtenerGeneralesLugares:generalesLugares
 }

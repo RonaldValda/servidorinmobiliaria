@@ -5,6 +5,8 @@ const UsuarioInmuebleBuscado = require('../../models/usuarioInmuebleBuscado');
 const InmuebleQueja=require('../../../module_inmueble/models/inmuebleQueja');
 const SolicitudesAdministradores=require('../../../models/solicitudesAdministradores');
 const AdministradorInmueble=require('../../../models/administradorInmueble');
+const EmailClaveVerificaciones=require('../../models/emailClaveVerificaciones');
+const transporter=require("../../models/mailer");
 const resolversUsuario={
     Query:{
         obtenerMembresiaPagos: async(_,{id})=>{
@@ -141,7 +143,59 @@ const resolversUsuario={
             await UsuarioInmuebleBuscado.findByIdAndUpdate(id,input);
             //console.log("aqui1");
             return "Se guardaron los cambios";
-        }
+        },
+        registrarEmailClaveVerificaciones: async(_,{input,actividad})=>{
+            let usuario=await Usuario.find({email:input.email});
+            if(usuario){
+                if(actividad=="Registrar"){
+                    throw new Error("El email ya está registrado");
+                }
+            }else{
+                if(actividad=="Recuperar"){
+                    throw new Error("El email no está registrado");
+                }
+            }
+            
+            await EmailClaveVerificaciones.findOneAndDelete({email : input.email});
+            let emailClaveVerificaciones=new EmailClaveVerificaciones(input);
+            var fecha=new Date(emailClaveVerificaciones.fecha_creacion);
+            fecha.setMinutes(fecha.getMinutes()+30);
+            //console.log(emailClaveVerificaciones.fecha_creacion);
+            //console.log(fecha);
+            emailClaveVerificaciones.fecha_vencimiento=fecha;
+            var clave=Math.floor(Math.random() * (999999  - 100000)) + 100000;
+            emailClaveVerificaciones.clave=clave;
+            await emailClaveVerificaciones.save();
+            let info = await transporter.sendMail({
+                from: '"Verificación de email" <rhyno12091991@gmail.com>', // sender address
+                //to: "elzhar.80.iact@gmail.com", // list of receivers
+                to: input.email, 
+                subject: "InmobiliaAPP", // Subject line
+                text: "456878", // plain text body
+                html: "<b>Clave de verificación: "+clave+"</b>", // html body
+            });
+            console.log(info);
+            return emailClaveVerificaciones;
+        },
+        obtenerEmailClaveVerificaciones: async(_,{email,clave})=>{
+            var filter1={};
+            filter1.email=email;
+            filter1.clave=clave;
+            let emailClaveVerificaciones=await EmailClaveVerificaciones.findOne(filter1);
+            //console.log(email);
+            if(emailClaveVerificaciones){
+                let usuario=await Usuario.findOne({email:email});
+                emailClaveVerificaciones.usuario=usuario;
+            }
+            return emailClaveVerificaciones;
+        },
+        buscarUsuarioEmail: async(_,{email})=>{
+            const usuario=await Usuario.findOne({email:email});
+            if(!usuario){
+                throw new Error("No se encontró al usuarioc");
+            }
+            return usuario;
+        },
     }
 }
 module.exports=resolversUsuario;

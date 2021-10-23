@@ -127,6 +127,11 @@ const resolversSuperUsuario={
             await inmuebleQueja.save();
             return inmuebleQueja;
         },
+        registrarVersionesAPP: async(_,{input})=>{
+            let versionesAPP=new VersionesAPP(input);
+            versionesAPP.save();
+            return "Se registró correctamente";     
+        },
     }
 }
 module.exports=resolversSuperUsuario;

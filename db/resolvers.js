@@ -17,10 +17,8 @@ const CuentasBanco=require('../models/cuentasBanco');
 const AdministradorAgente=require('../models/administradorAgente');
 const AgentePago=require('../models/membresiaPago');
 const PlanesPagoAgente=require("../models/planesPagoAgente");
-const transporter=require("../models/mailer");
-const EmailClaveVerificaciones=require('../models/emailClaveVerificaciones');
-const VersionesAPP=require('../models/versionesAPP');
-const Zona=require('../models/zona');
+const VersionesAPP=require('../module_generales/models/versionesAPP');
+const Zona=require('../module_generales/models/zona');
 const InmuebleComprobante = require('../models/inmuebleComprobante'); 
 const RegistroAds = require('../models/registroAds'); 
 const InmuebleReportado = require('../models/inmuebleReportado'); 
@@ -421,14 +419,7 @@ const resolvers={
                 return usuario;
             }
         },
-        obtenerZonas: async(_,{ciudad})=>{
-            let zonas=await Zona.find({ciudad:ciudad});
-            var fecha=Date.parse('1991-09-12T10:20:30Z');
-            var fecha1=new Date();
-            console.log(fecha.toLocaleString());
-            console.log(fecha1);
-            return zonas;     
-        },
+        
         obtener: async(_)=>{
             let registroAds=await RegistroAds.find({});
             return registroAds;     
@@ -2035,81 +2026,7 @@ const resolvers={
             await planesPagoPublicaiones.save();
             return "Se registró correctamente";
         },
-        registrarEmailClaveVerificaciones: async(_,{input,actividad})=>{
-            let usuario=await Usuario.find({email:input.email});
-            if(usuario){
-                if(actividad=="Registrar"){
-                    throw new Error("El email ya está registrado");
-                }
-            }else{
-                if(actividad=="Recuperar"){
-                    throw new Error("El email no está registrado");
-                }
-            }
-            
-            await EmailClaveVerificaciones.findOneAndDelete({email : input.email});
-            let emailClaveVerificaciones=new EmailClaveVerificaciones(input);
-            var fecha=new Date(emailClaveVerificaciones.fecha_creacion);
-            fecha.setMinutes(fecha.getMinutes()+30);
-            //console.log(emailClaveVerificaciones.fecha_creacion);
-            //console.log(fecha);
-            emailClaveVerificaciones.fecha_vencimiento=fecha;
-            var clave=Math.floor(Math.random() * (999999  - 100000)) + 100000;
-            emailClaveVerificaciones.clave=clave;
-            await emailClaveVerificaciones.save();
-            let info = await transporter.sendMail({
-                from: '"Verificación de email" <rhyno12091991@gmail.com>', // sender address
-                //to: "elzhar.80.iact@gmail.com", // list of receivers
-                to: input.email, 
-                subject: "InmobiliaAPP", // Subject line
-                text: "456878", // plain text body
-                html: "<b>Clave de verificación: "+clave+"</b>", // html body
-            });
-            console.log(info);
-            return emailClaveVerificaciones;
-        },
-        obtenerEmailClaveVerificaciones: async(_,{email,clave})=>{
-            var filter1={};
-            filter1.email=email;
-            filter1.clave=clave;
-            let emailClaveVerificaciones=await EmailClaveVerificaciones.findOne(filter1);
-            //console.log(email);
-            if(emailClaveVerificaciones){
-                let usuario=await Usuario.findOne({email:email});
-                emailClaveVerificaciones.usuario=usuario;
-            }
-            return emailClaveVerificaciones;
-        },
-        registrarVersionesAPP: async(_,{input})=>{
-            let versionesAPP=new VersionesAPP(input);
-            versionesAPP.save();
-            return "Se registró correctamente";     
-        },
-        crearZona: async(_,{input})=>{
-            let zona=new Zona(input);
-            zona.save();
-            return zona;
-        },
-        modificarZona: async(_,{id,input})=>{
-            let zona=await Zona.findById(id);
-            zona.nombre_zona=input.nombre_zona;
-            zona.ciudad=input.ciudad;
-            zona.coordenadas=input.coordenadas;
-            zona.save();
-            console.log(zona.id);
-            return zona;
-        },
-        eliminarZona: async(_,{id})=>{
-            await Zona.findByIdAndDelete(id);
-            return "Se eliminó la zona";
-        },
-        buscarUsuarioEmail: async(_,{email})=>{
-            const usuario=await Usuario.findOne({email:email});
-            if(!usuario){
-                throw new Error("No se encontró al usuarioc");
-            }
-            return usuario;
-        },
+        
     }
 }
 

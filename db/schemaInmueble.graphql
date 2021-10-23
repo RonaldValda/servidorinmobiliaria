@@ -4,7 +4,7 @@ extend type Query {
     obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
     obtenerMisInmueblesVenta(id: ID): [Inmueble]
-    obtenerZonas(ciudad:String):[Zona]
+    
 }
 scalar Date
 
@@ -410,17 +410,7 @@ input FiltroSimpleInmuebleInput{
     ciudad: String
     id_usuario: String
 }
-input ZonaInput{
-    ciudad:String
-    nombre_zona:String
-    coordenadas:[Float]
-}
-type Zona{
-    id:ID
-    ciudad:String
-    nombre_zona:String
-    coordenadas:[Float]
-}
+
 extend type Mutation {
     registrarInmueble(id_creador: ID!,id_propietario: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput) : Inmueble
     actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput) : String
@@ -429,11 +419,7 @@ extend type Mutation {
     registrarInmuebleMasivo(id_creador: ID!,id_propietario: ID!): String
     registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput): String
     actualizarFechaInmuebleBase(id: ID,fecha: String):String
-    crearZona(input:ZonaInput):Zona
-    modificarZona(id:ID,input:ZonaInput):Zona
-    eliminarZona(id:ID):String
     reportarInmueble(id_inmueble:ID,id_solicitante:ID,input:InmuebleReportadoInput) : InmuebleReportado
-    
     registrarInmuebleQueja(id_inmueble:ID,input:InmuebleQuejaInput):InmuebleQueja
     responderInmuebleQueja(id_solicitud:ID,input:InmuebleQuejaInput):InmuebleQueja
 }
