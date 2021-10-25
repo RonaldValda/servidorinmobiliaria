@@ -1,4 +1,5 @@
-const Usuario = require('../models/usuario');
+
+const Usuario = require('../module_usuario/models/usuario');
 const Proyecto = require('../models/proyecto'); 
 const Tarea = require('../models/tarea');
 const Inmueble = require('../models/inmueble'); 
@@ -7,7 +8,7 @@ const Agencia = require('../models/agencia');
 const bcryptjs = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const InmuebleFavorito = require('../models/inmuebleFavorito'); 
-const UsuarioInmuebleBase = require('../models/usuarioInmuebleBase');
+const UsuarioInmuebleBase = require('../module_usuario/models/usuarioInmuebleBase');
 const SecuenciasIndices = require('../models/secuenciasIndices');
 const SolicitudesUsuarios=require('../models/solicitudesUsuarios');
 const SolicitudesAdministradores=require('../models/solicitudesAdministradores');
@@ -15,12 +16,8 @@ const AdministradorImmueble=require('../models/administradorInmueble');
 const BitacoraInmueble=require('../models/bitacoraInmueble');
 const CuentasBanco=require('../models/cuentasBanco');
 const AdministradorAgente=require('../models/administradorAgente');
-const AgentePago=require('../models/membresiaPago');
-const PlanesPagoAgente=require("../models/planesPagoAgente");
-const VersionesAPP=require('../module_generales/models/versionesAPP');
 const Zona=require('../module_generales/models/zona');
 const InmuebleComprobante = require('../models/inmuebleComprobante'); 
-const RegistroAds = require('../models/registroAds'); 
 const InmuebleReportado = require('../models/inmuebleReportado'); 
 const PlanesPagoPublicacion = require('../models/planesPagoPublicacion'); 
 const InmuebleDarBaja = require('../models/inmuebleDarBaja');
@@ -364,10 +361,7 @@ const resolvers={
             let planesPagoAgente=PlanesPagoAgente.find(filter1).sort({plan:1});
             return planesPagoAgente;
         },
-        obtenerVersionesAPP: async(_)=>{
-            let versionesAPP=await VersionesAPP.findOne({}).sort({fecha_publicacion:1})
-            return versionesAPP;     
-        },
+        
         autenticarUsuarioAutomatico: async (_,{email,imei}) => {
             let usuario;
             var fecha=new Date();
@@ -444,124 +438,7 @@ const resolvers={
         }
     },*/
     Mutation: {
-        crearModificarUsuario: async (_,{input,actividad}) => {
-            const {email,password}=input;
-            const existeUsuario = await Usuario.findOne({ email });
-            let usuario;
-            var filter1={};
-            var fecha=new Date();
-            var mes=fecha.getMonth();
-            filter1.mes={$gte:mes};
-            if(existeUsuario){
-                if(actividad=="Registrar"){
-                    throw new Error('El usuario ya está registrado');
-                }
-            }else{
-                if(actividad=="Recuperar"){
-                    throw new Error('El usuario no está registrado');
-                }
-            }
-            try{
-                //hashear password
-                const salt = await bcryptjs.genSalt(10);
-                input.password = await bcryptjs.hash(password,salt);
-                if(actividad=="Registrar"){
-                    const nuevoUsuario = new Usuario(input);
-                    await nuevoUsuario.save();
-                }else if(actividad=="Recuperar"){
-                    usuario=await Usuario.findOne({email:input.email});
-                    usuario.password=input.password;
-                    usuario.save();
-                    //await Usuario.findOneAndUpdate({email:input.email},input);
-                }else{
-
-                }
-                
-                usuario=await Usuario.findOne({email:input.email})
-                    .populate("usuario_inmueble_base")
-                    .populate({path:"membresia_pagos",match:filter1,
-                    populate:{path:"cuenta_banco"}})
-                    .populate({path:"membresia_pagos",match:filter1,
-                    populate:{path:"usuario"}})
-                    .populate({path:"membresia_pagos",
-                    populate:{path:"membresia_planes_pago"}})
-                    .populate({path:"membresia_pagos",match:filter1,
-                    populate:{path:"administrador"}});
-                return usuario;
-                
-            }catch(error){
-                console.log(error);
-            }
-            
-        },
-        autenticarUsuario: async (_,{input}) => {
-            const { email, password} = input;
-            //si el usuario existe
-            
-            const existeUsuario = await Usuario.findOne({ email });
-            let usuario;
-            //console.log(existeUsuario);
-            var filter1={};
-            var fecha=new Date();
-            var mes=fecha.getMonth();
-            filter1.mes={$gte:mes};
-            if(input.medio_registro=="Creada"){
-                if(!existeUsuario){
-                    throw new Error('El usuario no existe');
-                }
-                // si el password es correcto
-                
-                const passwordCorrecto=await bcryptjs.compare(password,existeUsuario.password);
-                
-                //console.log(passwordCorrecto)
-                if(!passwordCorrecto){
-                    throw new Error('Password Incorrecto');
-                }
-                if(existeUsuario.estado_cuenta==false){
-                    throw new Error('Cuenta inactiva, contáctese con el administrador');
-                }
-                usuario=await Usuario.findOne({email:input.email})
-                .populate("usuario_inmueble_base")
-                .populate({path:"membresia_pagos",
-                populate:{path:"cuenta_banco"}})
-                .populate({path:"membresia_pagos",
-                populate:{path:"usuario"}})
-                .populate({path:"membresia_pagos",
-                populate:{path:"membresia_planes_pago"}})
-                .populate({path:"membresia_pagos",
-                populate:{path:"administrador"}});
-            }else{
-                if(!existeUsuario){
-                    const nuevoUsuario = new Usuario(input);
-                    nuevoUsuario.registro=Date.now();
-                    nuevoUsuario.fecha_ultimo_ingreso=Date.now();
-                    await nuevoUsuario.save();
-                    usuario=nuevoUsuario;
-                }else{
-                    //var fecha=new Date();
-                    fecha.setDate(fecha.getDate()-3);
-                    await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
-                    usuario=await Usuario.findOne({email:input.email})
-                    .populate("usuario_inmueble_base")
-                    .populate({path:"membresia_pagos",
-                    populate:{path:"cuenta_banco"}})
-                    .populate({path:"membresia_pagos",
-                    populate:{path:"usuario"}})
-                    .populate({path:"membresia_pagos",
-                    populate:{path:"membresia_planes_pago"}})
-                    .populate({path:"membresia_pagos",
-                    populate:{path:"administrador"}});
-                    
-                    //await usuario.find({}).populate("usuario_inmueble_base",{});
-                }
-            }
-            //await usuario.;
-            //dar acceso a la app
-            return usuario;
-            /*return {
-                token: crearToken(existeUsuario,process.env.SECRETA,'2hr')
-            };*/
-        },
+       
         nuevoProyecto: async (_,{input},ctx)=>{
             //console.log('DESDE RESOLVER', ctx);
             //asociar el creador al proyecto

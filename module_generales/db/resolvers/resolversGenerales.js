@@ -1,6 +1,7 @@
 const Zona=require('../../models/zona');
 const Ciudad=require('../../models/ciudad');
 const Departamento=require('../../models/departamento');
+const VersionesAPP=require('../../models/versionesAPP');
 const resolversGenerales={
     Query:{
         obtenerZonas: async(_,{id_ciudad})=>{
@@ -23,6 +24,10 @@ const resolversGenerales={
             .populate({path:"departamento"});
             respuesta.zonas=await Zona.find({});
             return respuesta;
+        },
+        obtenerVersionesAPP: async(_)=>{
+            let versionesAPP=await VersionesAPP.findOne({}).sort({fecha_publicacion:1})
+            return versionesAPP;     
         },
     },
     Mutation:{

@@ -1,5 +1,5 @@
-const MembresiaPlanesPago = require('../../../models/membresiaPlanesPago');
-const MembresiaPago=require('../../../models/membresiaPago');
+const MembresiaPlanesPago = require('../../../module_generales/models/membresiaPlanesPago');
+const MembresiaPago=require('../../models/membresiaPago');
 const InmuebleReportado=require('../../../models/inmuebleReportado');4
 const InmuebleQueja=require('../../../module_inmueble/models/inmuebleQueja');
 const Inmueble=require('../../../models/inmueble');
