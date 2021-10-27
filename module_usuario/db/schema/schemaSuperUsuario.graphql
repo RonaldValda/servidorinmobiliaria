@@ -4,9 +4,11 @@ extend type Query{
     obtenerVersionesAPP:VersionesAPP
     obtener:[RegistroAds]
     obtenerNotificacionesSuperUsuario(id:ID):NotificacionesSuperUsuario
+    obtenerNotificacionesNumeroSuperUsuario(id:ID):Int
     obtenerInmueblesSuperUsuario(ciudad:String,tipo_contrato:String):[AdministradorInmueble]
     obtenerSolicitudesAdministradoresSuperUsuario(id:ID):[SolicitudesAdministradores]
     obtenerMembresiaPagosSuperUsuario(id:ID):[MembresiaPago]
+    obtenerAdministradores:[Usuario]
 }
 type NotificacionesSuperUsuario{
     reportar_inmueble:[InmuebleReportado]
@@ -50,4 +52,8 @@ extend type Mutation{
     responderMembresiaPagoSuperUsuario(id:ID,id_super_usuario:ID,autorizacion:String,observaciones:String) : MembresiaPago
     responderReporteInmueble(id_solicitud:ID,input:InmuebleReportadoInput) : InmuebleReportado
     responderInmuebleQuejaSuperUsuario(id_solicitud:ID,id_super_usuario:ID,input:InmuebleQuejaInput) : InmuebleQueja
+    habilitarAdministrador(id_usuario:ID):String
+    inhabilitarAdministrador(id_usuario:ID):String
+    asignarAdministradorZona(id_usuario:ID,id_zona:ID):String
+    quitarAdministradorZona(id:ID):String
 }

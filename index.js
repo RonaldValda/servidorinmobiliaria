@@ -7,6 +7,7 @@ require('dotenv').config('variables.env');
 const resolvers=require('./db/resolvers');
 const resolversGenerales=require('./module_generales/db/resolvers/resolversGenerales');
 const resolversUsuario=require('./module_usuario/db/resolvers/resolverUsuario');
+const resolversAdministrador=require('./module_usuario/db/resolvers/resolversAdministrador');
 const resolversSuperUsuario=require('./module_usuario/db/resolvers/resolversSuperUsuario');
 const pathSchemaGenerales='./module_generales/db/schema/schemaGenerales.graphql';
 const pathSchemaSuperUsuario='./module_usuario/db/schema/schemaSuperUsuario.graphql';
@@ -28,7 +29,7 @@ const server=new ApolloServer({
         gql(fs.readFileSync('./db/schemaAgencia.graphql','utf8')),
         gql(fs.readFileSync('./db/schemaInmueble.graphql','utf8')),
     ],
-    resolvers:[resolversGenerales,resolvers,resolversSuperUsuario,resolversUsuario],
+    resolvers:[resolversGenerales,resolvers,resolversSuperUsuario,resolversUsuario,resolversAdministrador],
     context: ({req})=>{
         const token = req.headers['authorization']||'';
         if(token){

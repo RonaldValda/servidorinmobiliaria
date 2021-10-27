@@ -5,7 +5,7 @@ const Tarea = require('../models/tarea');
 const Inmueble = require('../models/inmueble'); 
 const InmuebleImagenes = require('../models/inmuebleImagenes'); 
 const Agencia = require('../models/agencia');
-const bcryptjs = require('bcryptjs');
+
 const jwt = require('jsonwebtoken');
 const InmuebleFavorito = require('../models/inmuebleFavorito'); 
 const UsuarioInmuebleBase = require('../module_usuario/models/usuarioInmuebleBase');
@@ -112,7 +112,8 @@ const resolvers={
         obtenerInmueblesSimpleFiltro: async (_,{input1})=>{
             var filter1={};
             if(input1.ciudad!="Todos") filter1.ciudad={$in:input1.ciudad};
-            if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
+            
+            //if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
             filter1.autorizacion={$in:"Activo"};
             //filter1={"tipo_inmueble":input1.tipo_inmueble,"tipo_contrato":input1.tipo_contrato}
             //console.log("filtro....",filter1);
@@ -1313,8 +1314,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=10;
-            var max=10;
+            var min=100;
+            var max=100;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1369,13 +1370,13 @@ const resolvers={
                         "Garcilazo","Bohorquez","Branco","Arancibia","Puma","Nogales"];
             let estado_negociacion=["Sin negociar"];
             //let estado_inmueble=["Sin negociar","Sin negociar","Sin negociar","Negociación inicial","Negociación avanzada","Vendido"];
-            //let ciudades=["La Paz","Oruro","Potosi","Cochabamba","Tarija","Sucre","Santa Cruz","Beni","Pando"];
-            let ciudades=["Sucre"];
+            let ciudades=["La Paz","Oruro","Potosí","Cochabamba","Tarija","Sucre","Santa Cruz","Trinidad"];
+            //let ciudades=["Sucre"];
             let zona=["Zona 1","Zona 2","Zona 3","Zona 4","Zona 5","Zona 6","Zona 7","Zona 8","Zona ","Zona 10"];
             //let tipo_inmueble=["Casa","Departamento","Terreno"];
             let tipo_inmueble=["Casa"];
-            //let tipo_contrato=["Venta","Alquiler","Anticrético"];
-            let tipo_contrato=["Venta",];
+            let tipo_contrato=["Venta","Alquiler","Anticrético"];
+            //let tipo_contrato=["Venta",];
             let imagenes_2D=["","www.linkimagenes"];
             let video_2D=["","www.linkvideo"];
             let tour_virtual=["","www.linktourvirtual"];
@@ -1586,7 +1587,7 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.autorizacion="Pendiente";
+                inmueble.autorizacion="Activo";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
                 

@@ -1,8 +1,20 @@
 extend type Query{
     obtenerMembresiaPagosAdministrador(id:ID):[MembresiaPago]
     obtenerSolicitudesAdministradores(id:ID):[SolicitudesAdministradores]
+    obtenerAdministradorZonas(id_administrador:ID):[AdministradorZona]
+    obtenerNotificacionesAdministrador(id:ID):NotificacionesAdministrador
+}
+type AdministradorZona{
+    id:ID
+    zona:Zona
+    administrador:Usuario
+}
+type NotificacionesAdministrador{
+    membresias_pagos:[MembresiaPago]
+    inscripciones_agentes:[InscripcionAgente]
 }
 extend type Mutation{
     responderMembresiaPago(id:ID,id_administrador:ID,autorizacion:String,observaciones:String) : MembresiaPago
     responderSolicitudAdministrador(id:ID,id_respondedor:ID,id_solicitud:ID,input:SolicitudesAdministradoresInput):String
+    responderSolicitudInscripcionAgente(id:ID,id_administrador:ID,respuesta:String,observaciones:String):InscripcionAgente
 }

@@ -5,6 +5,9 @@ const UsuarioInmuebleBuscadoSchema = new mongoose.Schema({
         type:String,
         default:""
     },
+    numero_telefono:{
+        type:String
+    },
     tipo_contrato: {
         type:String,
         default:""

@@ -48,6 +48,7 @@ const UsuarioSchema = mongoose.Schema({
     },
     fecha_ultimo_ingreso: {
         type: Date,
+        default:Date.now()
     },
     estado_cuenta:{
         type: Boolean
@@ -60,7 +61,10 @@ const UsuarioSchema = mongoose.Schema({
         type:Number,
         default: 0
     },
-    
+    ciudad:{
+        type:String,
+        default:""
+    },
     membresia_pagos:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:'MembresiaPago',default:{}

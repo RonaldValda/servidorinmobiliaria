@@ -7,6 +7,9 @@ const SolicitudesAdministradores=require('../../../models/solicitudesAdministrad
 const AdministradorInmueble=require('../../../models/administradorInmueble');
 const EmailClaveVerificaciones=require('../../models/emailClaveVerificaciones');
 const transporter=require("../../models/mailer");
+const bcryptjs = require('bcryptjs');
+const InscripcionAgente=require('../../models/inscripcionAgente');
+const { find } = require('../../models/inscripcionAgente');
 const resolversUsuario={
     Query:{
         obtenerMembresiaPagos: async(_,{id})=>{
@@ -54,6 +57,13 @@ const resolversUsuario={
                                         .populate({path:"inmueble_dar_baja"});
             resultado.administrador_inmueble=administradorInmueble;
             return resultado;
+        },
+        obtenerAgentesCiudad: async(_,{ciudad})=>{
+            var filter={};
+            filter.ciudad=ciudad;
+            filter.tipo_usuario="Agente";
+            const usuarios=Usuario.find(filter).sort({cantidad_calificados:1});
+            return usuarios;
         }
     },
     Mutation:{
@@ -308,12 +318,86 @@ const resolversUsuario={
             return emailClaveVerificaciones;
         },
         buscarUsuarioEmail: async(_,{email})=>{
-            const usuario=await Usuario.findOne({email:email});
+            let usuario=await Usuario.findOne({email:email});
+            /*const administradores=await Usuario.find({});
+            var numero=(await Usuario.find({}).countDocuments());
+            console.log(numero);*/
+            /*let administradores=await Usuario.find({});
+            var count=administradores.length;
+            var random = Math.floor(Math.random() * count);
+            usuario=administradores[random];*/
+
+
             if(!usuario){
                 throw new Error("No se encontró al usuarioc");
             }
             return usuario;
         },
+        registrarSolicitudInscripcionAgente: async(_,{id_usuario_solicitante,agencia,web,ciudad,link_respaldo_solicitud})=>{
+            const usuario=await Usuario.findById(id_usuario_solicitante);  
+            usuario.nombre_agencia=agencia;
+            usuario.ciudad=ciudad;
+            usuario.web=web;
+            const inscripcionAgente=InscripcionAgente(input);
+            inscripcionAgente.usuario_solicitante=id_usuario_solicitante;
+            inscripcionAgente.link_respaldo_solicitud=link_respaldo_solicitud;
+            var filter={};
+            filter.ciudad=ciudad;
+            filter.tipo_usuario="Administrador";
+            let administradores=await Usuario.find(filter);
+            var count=administradores.length;
+            if (count>0){
+                var random = Math.floor(Math.random() * count);
+                const administrador=administradores[random]
+                inscripcionAgente.usuario_respondedor=administrador.id;
+            }
+            var fecha=new Date();
+            inscripcionAgente.fecha_solicitud=fecha; 
+            await inscripcionAgente.save();
+            await usuario.save();
+            return inscripcionAgente;
+        },
+        registrarUsuariosMasivo: async(_,{})=>{
+            var cantidad=50;
+            let nombres=["Juan","Ruben","Maria","Mario","Roberto","Pedro","Luis",
+            "Victor","Carlos","Cesar","Pablo","Rodrigo","Ariel","Cristian",
+            "Roxana","Shirley","Rosalia","Juana","Carlota","Carla","Raul",
+            "Wilber","Miguel","Angel","Fernando","Fernanda","David","Paola",
+            "Evelin","Alejandra","Alejandro","Marco","Alberto","Ruth"];
+            let apellidos=["Llanos","Mamani","Arando","Castro","Cruz","Perez","Gonzales",
+                        "Loredo","Peredo","Abastoflor","Paco","Rodriguez","Dominguez",
+                        "Fuentes","Gallardo","Guzman","Suarez","Vega","Bejarano","Palacios",
+                        "Garcilazo","Bohorquez","Branco","Arancibia","Puma","Nogales"];
+            let ciudades=["La Paz","Oruro","Potosí","Cochabamba","Tarija","Sucre","Santa Cruz","Trinidad"];
+            var i=0;
+            for(i=0;i<cantidad;i++){
+                var numero_aleatorio=Math.floor(Math.random() * (ciudades.length - 0)) + 0;
+                const usuario=Usuario();
+                usuario.ciudad=ciudades[numero_aleatorio];
+                usuario.ciudad="Sucre";
+                numero_aleatorio=Math.floor(Math.random() * (nombres.length - 0)) + 0;
+                usuario.nombres=nombres[numero_aleatorio];
+                numero_aleatorio=Math.floor(Math.random() * (apellidos.length - 0)) + 0;
+                usuario.apellidos=apellidos[numero_aleatorio];
+                usuario.email="email"+(i+1000)+"@email.com";
+                const salt = await bcryptjs.genSalt(10);
+                usuario.password = await bcryptjs.hash("12345",salt);
+                usuario.medio_registro="Creada";
+                usuario.tipo_usuario="Agente";
+                usuario.nombre_agencia="Agencia "+i;
+                numero_aleatorio=Math.floor(Math.random() * (99999999 - 0)) + 0;
+                usuario.telefono=""+numero_aleatorio;
+                usuario.web="www.agencia"+i+".com";
+                usuario.verificado=true;
+                usuario.estado_cuenta=true;
+                numero_aleatorio=Math.floor(Math.random() * (50 - 0)) + 0;
+                usuario.cantidad_calificados=numero_aleatorio;
+                numero_aleatorio=Math.floor(Math.random() * (5 - 1)) + 1;
+                usuario.sumatoria_calificacion=numero_aleatorio*usuario.cantidad_calificados;
+                await usuario.save();
+            }
+            return "Registrado";
+        }
     }
 }
 module.exports=resolversUsuario;

@@ -3,6 +3,9 @@ const MembresiaPago=require('../../models/membresiaPago');
 const InmuebleReportado=require('../../../models/inmuebleReportado');4
 const InmuebleQueja=require('../../../module_inmueble/models/inmuebleQueja');
 const Inmueble=require('../../../models/inmueble');
+const Usuario = require('../../models/usuario');
+const VersionesAPP=require('../../../module_generales/models/versionesAPP');
+const AdministradorZona=require('../../models/administradorZona');
 const resolversSuperUsuario={
     Query:{
         obtenerMembresiaPlanesPago: async(_,{})=>{
@@ -43,6 +46,28 @@ const resolversSuperUsuario={
                 .populate({path:"usuario"})
                 .populate({path:"administrador"});
             return respuesta;
+        },
+        obtenerNotificacionesNumeroSuperUsuario:async(_,{id})=>{
+            var filter={};
+            filter.usuario_respondedor=id;
+            filter.respuesta="";
+            var respuesta={};
+            var numero=0;
+            numero=await InmuebleReportado.find(filter).countDocuments();
+            numero=numero+(await InmuebleQueja.find(filter).countDocuments());
+            filter={};
+            filter.super_usuario={$in:[null,id]};
+            filter.autorizacion="Aprobado";
+            filter.autorizacion_super_usuario="Pendiente";
+            numero=numero+(await MembresiaPago.find(filter).countDocuments());
+           
+            return numero;
+        },
+        obtenerAdministradores: async(_,{})=>{
+            var filter={};
+            filter.tipo_usuario="Administrador";
+            const usuarios=await Usuario.find(filter);
+            return usuarios;
         }
     },
     Mutation:{
@@ -132,6 +157,29 @@ const resolversSuperUsuario={
             versionesAPP.save();
             return "Se registró correctamente";     
         },
+        habilitarAdministrador: async(_,{id_usuario})=>{
+            const usuario=await Usuario.findById(id_usuario);
+            usuario.tipo_usuario="Administrador";
+            await usuario.save();
+            return "Habilitado";
+        },
+        inhabilitarAdministrador: async(_,{id_usuario})=>{
+            const usuario=await Usuario.findById(id_usuario);
+            usuario.tipo_usuario="Común";
+            await usuario.save();
+            return "Inhabilitado";
+        },
+        asignarAdministradorZona:async(_,{id_usuario,id_zona})=>{
+            const administradorZona=AdministradorZona();
+            administradorZona.administrador=id_usuario;
+            administradorZona.zona=id_zona;
+            await administradorZona.save();
+            return administradorZona.id;
+        },
+        quitarAdministradorZona:async(_,{id})=>{
+            await AdministradorZona.findByIdAndDelete(id);
+            return "Quitado";
+        }
     }
 }
 module.exports=resolversSuperUsuario;

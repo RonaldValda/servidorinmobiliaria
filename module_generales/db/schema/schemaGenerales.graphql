@@ -21,6 +21,21 @@ type generalesLugares{
     zonas:[Zona]
     ciudades:[Ciudad]
 }
+type Banco{
+    id:ID
+    nombre_banco:String
+    link_logo_banco:String
+    web:String
+    app:String
+    pre_aprobacion:String
+}
+input BancoInput{
+    nombre_banco:String
+    link_logo_banco:String
+    web:String
+    app:String
+    pre_aprobacion:String
+}
 extend type Mutation{
     registrarCiudad(id_departamento:ID,nombre_ciudad:String):Ciudad
     modificarCiudad(id:ID,nombre_ciudad:String):String
@@ -31,10 +46,14 @@ extend type Mutation{
     registrarZona(id_ciudad:ID,input:ZonaInput):Zona
     modificarZona(id:ID,input:ZonaInput):String
     eliminarZona(id:ID):String
+    registrarBanco(input:BancoInput):Banco
+    modificarBanco(id:ID,input:BancoInput):String
+    eliminarBanco(id:ID):String
 }
 extend type Query{
     obtenerDepartamentos:[Departamento]
     obtenerCiudades(id_departamento:ID):[Ciudad]
     obtenerZonas(id_ciudad:ID):[Zona]
     obtenerGeneralesLugares:generalesLugares
+    obtenerBancos:[Banco]
 }

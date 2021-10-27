@@ -12,7 +12,8 @@
         obtenerPlanesPagoAgente:[PlanesPagoAgente]
         obtenerUsuarioInmueblesBuscados(id:ID):[UsuarioInmuebleBuscado]
         obtenerNotificacionesAccionesVendedor(id_inmueble:ID):NotificacionesAccionesVendedor
-    }
+        obtenerAgentesCiudad(ciudad:String):[Usuario]
+  }
     type NotificacionesAccionesVendedor{
         inmueble_queja:[InmuebleQueja]
         administrador_inmueble:AdministradorInmueble
@@ -28,6 +29,7 @@
         fecha_ultimo_ingreso: String
         usuario_inmueble_base: [UsuarioInmuebleBase]
         tipo_usuario: String
+        ciudad: String
         nombre_agencia: String
         telefono: String
         web: String
@@ -52,6 +54,7 @@
         medio_registro: String
         fecha_ultimo_ingreso: Date
         tipo_usuario: String
+        ciudad: String
         nombre_agencia: String
         telefono: String
         web: String
@@ -299,6 +302,7 @@
     type UsuarioInmuebleBuscado{
         id:ID
         nombre_configuracion:String
+        numero_telefono:String
         tipo_contrato:String
         tipo_inmueble:String
         ciudad:String
@@ -376,6 +380,7 @@
     }
     input UsuarioInmuebleBuscadoInput{
         nombre_configuracion:String
+        numero_telefono:String
         tipo_contrato:String
         tipo_inmueble:String
         ciudad:String
@@ -450,6 +455,17 @@
         tour_virtual_360:Boolean
         video_tour_360:Boolean
     }
+    type InscripcionAgente{
+        id:ID
+        fecha_solicitud:Date
+        fecha_respuesta:Date
+        link_respaldo_solicitud:String
+        respuesta:String
+        observaciones:String
+        respuesta_entregada:Boolean,
+        usuario_solicitante:Usuario
+        usuario_respondedor:Usuario
+    }
     extend type Mutation {
         crearModificarUsuario(input: UsuarioInput,actividad:String) : Usuario
         autenticarUsuario(input: UsuarioInput) : Usuario
@@ -465,4 +481,6 @@
         registrarPlanesPagoPublicacion(input:PlanesPagoPublicacionInput):String
         registrarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):UsuarioInmuebleBuscado
         modificarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):String
+        registrarSolicitudInscripcionAgente(id_usuario_solicitante:ID,agencia:String,web:String,ciudad:String,link_respaldo_solicitud:String):InscripcionAgente
+        registrarUsuariosMasivo:String
     }

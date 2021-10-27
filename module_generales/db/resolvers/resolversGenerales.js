@@ -2,6 +2,7 @@ const Zona=require('../../models/zona');
 const Ciudad=require('../../models/ciudad');
 const Departamento=require('../../models/departamento');
 const VersionesAPP=require('../../models/versionesAPP');
+const Banco=require('../../models/banco');
 const resolversGenerales={
     Query:{
         obtenerZonas: async(_,{id_ciudad})=>{
@@ -29,6 +30,10 @@ const resolversGenerales={
             let versionesAPP=await VersionesAPP.findOne({}).sort({fecha_publicacion:1})
             return versionesAPP;     
         },
+        obtenerBancos: async(_,{})=>{
+            let bancos=await Banco.find({});
+            return bancos;
+        }
     },
     Mutation:{
         registrarDepartamento: async(_,{nombre_departamento})=>{
@@ -81,6 +86,19 @@ const resolversGenerales={
             await Zona.findByIdAndDelete(id);
             return "Eliminado";
         },
+        registrarBanco: async(_,{input})=>{
+            const banco=Banco(input);
+            await banco.save();
+            return banco;
+        },
+        modificarBanco: async(_,{id,input})=>{
+            await Banco.findByIdAndUpdate({id:id},input);
+            return "Modificado";
+        },
+        eliminarBanco: async(_,{id})=>{
+            await Banco.findByIdAndDelete(id);
+            return "Eliminado";
+        }
     }
 }
 module.exports=resolversGenerales;
