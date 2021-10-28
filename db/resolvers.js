@@ -794,17 +794,20 @@ const resolvers={
                 let inmueble=await Inmueble.findById(id_inmueble);
                 
                 if(inmuebleFavorito){
-                    if(inmuebleFavorito.favorito&&!input1.favorito){
+                    if(inmuebleFavorito.favorito&&(!input1.favorito)){
                         //console.log("de favorito a no favorito");
                         if(inmueble.cantidad_favoritos>0){
                             inmueble.cantidad_favoritos=inmueble.cantidad_favoritos-1;
+                            if(inmueble.cantidad_favoritos<0){
+                                inmueble.cantidad_favoritos=0;
+                            }
                         }
                         
-                    }else if(!inmuebleFavorito.favorito&&input1.favorito){
+                    }else if((!inmuebleFavorito.favorito)&&input1.favorito){
                         //console.log("de no favorito a favorito");
                         inmueble.cantidad_favoritos=inmueble.cantidad_favoritos+1;
                     }
-                    if(!inmuebleFavorito.doble_visto&&input1.doble_visto){
+                    if((!inmuebleFavorito.doble_visto)&&input1.doble_visto){
                         inmueble.cantidad_doble_vistos=inmueble.cantidad_doble_vistos+1;
                     }
                     await InmuebleFavorito.findOneAndUpdate({_id:inmuebleFavorito.id},input1);

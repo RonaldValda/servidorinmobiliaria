@@ -272,6 +272,15 @@ const resolversUsuario={
             //console.log("aqui1");
             return "Se guardaron los cambios";
         },
+        modificarUsuarioInmuebleBuscadoPersonales: async(_,{id,nombre_configuracion,numero_telefono})=>{
+            //console.log("aqui");
+            const buscado=await UsuarioInmuebleBuscado.findById(id);
+            buscado.nombre_configuracion=nombre_configuracion;
+            buscado.numero_telefono=numero_telefono;
+            await buscado.save();
+            //console.log("aqui1");
+            return "Guardado";
+        },
         registrarEmailClaveVerificaciones: async(_,{input,actividad})=>{
             let usuario=await Usuario.find({email:input.email});
             if(usuario){

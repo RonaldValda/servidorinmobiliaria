@@ -481,6 +481,7 @@
         registrarPlanesPagoPublicacion(input:PlanesPagoPublicacionInput):String
         registrarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):UsuarioInmuebleBuscado
         modificarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):String
+        modificarUsuarioInmuebleBuscadoPersonales(id:ID,nombre_configuracion:String,numero_telefono:String):String
         registrarSolicitudInscripcionAgente(id_usuario_solicitante:ID,agencia:String,web:String,ciudad:String,link_respaldo_solicitud:String):InscripcionAgente
         registrarUsuariosMasivo:String
     }
