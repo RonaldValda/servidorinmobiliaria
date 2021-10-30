@@ -371,6 +371,10 @@ const resolvers={
                 var mes=fecha.getMonth();
                 filter1.mes={$gte:mes};
                 //fecha.setDate(fecha.getDate()-3);
+                usuario=await Usuario.findOne({email:email});
+                usuario.fecha_penultimo_ingreso=usuario.fecha_ultimo_ingreso;
+                usuario.fecha_ultimo_ingreso=fecha;
+                await usuario.save();
                 await Usuario.findOneAndUpdate({email:email},{fecha_ultimo_ingreso:fecha})
                 usuario=await Usuario.findOne({email:email})
                 .populate("usuario_inmueble_base")
@@ -387,12 +391,16 @@ const resolvers={
                 const existeUsuario = await Usuario.findOne({ imei_telefono:imei });
                 if(!existeUsuario){
                     const nuevoUsuario = new Usuario();
+                    nuevoUsuario.fecha_penultimo_ingreso=nuevoUsuario.fecha_ultimo_ingreso;
                     nuevoUsuario.fecha_ultimo_ingreso=fecha;
                     nuevoUsuario.imei_telefono=imei;
                     nuevoUsuario.tipo_usuario="Común";
                     nuevoUsuario.medio_registro="Defecto";
                     await nuevoUsuario.save();
                 }
+                existeUsuario.fecha_penultimo_ingreso=existeUsuario.fecha_ultimo_ingreso;
+                existeUsuario.fecha_ultimo_ingreso=fecha;
+                await existeUsuario.save();
                 usuario=await Usuario.findOne({imei_telefono:imei})
                     .populate("usuario_inmueble_base")
                     .populate({path:"membresia_pagos",

@@ -26,7 +26,8 @@
         imei_telefono: String
         email: String
         medio_registro: String
-        fecha_ultimo_ingreso: String
+        fecha_ultimo_ingreso: Date
+        fecha_penultimo_ingreso: Date
         usuario_inmueble_base: [UsuarioInmuebleBase]
         tipo_usuario: String
         ciudad: String

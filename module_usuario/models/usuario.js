@@ -50,6 +50,10 @@ const UsuarioSchema = mongoose.Schema({
         type: Date,
         default:Date.now()
     },
+    fecha_penultimo_ingreso: {
+        type: Date,
+        default:Date.now()
+    },
     estado_cuenta:{
         type: Boolean
     },

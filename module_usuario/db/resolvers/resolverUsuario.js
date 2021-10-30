@@ -143,6 +143,9 @@ const resolversUsuario={
                 if(existeUsuario.estado_cuenta==false){
                     throw new Error('Cuenta inactiva, contáctese con el administrador');
                 }
+                existeUsuario.fecha_penultimo_ingreso=existeUsuario.fecha_ultimo_ingreso;
+                existeUsuario.fecha_ultimo_ingreso=fecha;
+                await existeUsuario.save();
                 usuario=await Usuario.findOne({email:input.email})
                 .populate("usuario_inmueble_base")
                 .populate({path:"membresia_pagos",
@@ -158,12 +161,15 @@ const resolversUsuario={
                     const nuevoUsuario = new Usuario(input);
                     nuevoUsuario.registro=Date.now();
                     nuevoUsuario.fecha_ultimo_ingreso=Date.now();
+                    nuevoUsuario.fecha_penultimo_ingreso=nuevoUsuario.fecha_ultimo_ingreso;
                     await nuevoUsuario.save();
                     usuario=nuevoUsuario;
                 }else{
                     //var fecha=new Date();
-                    fecha.setDate(fecha.getDate()-3);
-                    await Usuario.findOneAndUpdate({email:input.email},{fecha_ultimo_ingreso:fecha})
+                    //fecha.setDate(fecha.getDate()-3);
+                    existeUsuario.fecha_penultimo_ingreso=existeUsuario.fecha_ultimo_ingreso;
+                    existeUsuario.fecha_ultimo_ingreso=fecha;
+                    await existeUsuario.save();
                     usuario=await Usuario.findOne({email:input.email})
                     .populate("usuario_inmueble_base")
                     .populate({path:"membresia_pagos",

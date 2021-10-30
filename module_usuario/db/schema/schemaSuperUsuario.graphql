@@ -4,11 +4,12 @@ extend type Query{
     obtenerVersionesAPP:VersionesAPP
     obtener:[RegistroAds]
     obtenerNotificacionesSuperUsuario(id:ID):NotificacionesSuperUsuario
-    obtenerNotificacionesNumeroSuperUsuario(id:ID):Int
+    obtenerNotificacionesExisteSuperUsuario(id:ID):Boolean
     obtenerInmueblesSuperUsuario(ciudad:String,tipo_contrato:String):[AdministradorInmueble]
     obtenerSolicitudesAdministradoresSuperUsuario(id:ID):[SolicitudesAdministradores]
     obtenerMembresiaPagosSuperUsuario(id:ID):[MembresiaPago]
     obtenerAdministradores:[Usuario]
+    obtenerUsuariosInmuebleBuscadosCiudad(ciudad:String):[UsuarioInmuebleBuscado]
 }
 type NotificacionesSuperUsuario{
     reportar_inmueble:[InmuebleReportado]

@@ -6,6 +6,7 @@ const Inmueble=require('../../../models/inmueble');
 const Usuario = require('../../models/usuario');
 const VersionesAPP=require('../../../module_generales/models/versionesAPP');
 const AdministradorZona=require('../../models/administradorZona');
+const UsuarioInmuebleBuscado=require('../../models/usuarioInmuebleBuscado');
 const resolversSuperUsuario={
     Query:{
         obtenerMembresiaPlanesPago: async(_,{})=>{
@@ -47,27 +48,43 @@ const resolversSuperUsuario={
                 .populate({path:"administrador"});
             return respuesta;
         },
-        obtenerNotificacionesNumeroSuperUsuario:async(_,{id})=>{
+        obtenerNotificacionesExisteSuperUsuario:async(_,{id})=>{
             var filter={};
             filter.usuario_respondedor=id;
             filter.respuesta="";
             var respuesta={};
             var numero=0;
-            numero=await InmuebleReportado.find(filter).countDocuments();
-            numero=numero+(await InmuebleQueja.find(filter).countDocuments());
+            const inmuebleReportado=await InmuebleReportado.findOne(filter);
+            if(inmuebleReportado){
+                return true;
+            }
+            //numero=await InmuebleReportado.find(filter).countDocuments();
+            const inmuebleQueja=await InmuebleReportado.findOne(filter);
+            //numero=numero+(await InmuebleQueja.find(filter).countDocuments());
+            if(inmuebleQueja){
+                return true;
+            }
             filter={};
             filter.super_usuario={$in:[null,id]};
             filter.autorizacion="Aprobado";
             filter.autorizacion_super_usuario="Pendiente";
-            numero=numero+(await MembresiaPago.find(filter).countDocuments());
-           
-            return numero;
+            const membresiaPago=await MembresiaPago.findOne(filter);
+            //numero=numero+(await MembresiaPago.find(filter).countDocuments());
+            if(membresiaPago){
+                return true;
+            }
+            return false;
         },
         obtenerAdministradores: async(_,{})=>{
             var filter={};
             filter.tipo_usuario="Administrador";
             const usuarios=await Usuario.find(filter);
             return usuarios;
+        },
+        obtenerUsuariosInmuebleBuscadosCiudad: async(_,{ciudad})=>{
+            var filter={};
+            const usuarioInmuebleBuscado=await UsuarioInmuebleBuscado.find(filter);
+            return usuarioInmuebleBuscado;
         }
     },
     Mutation:{
