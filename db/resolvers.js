@@ -19,7 +19,7 @@ const AdministradorAgente=require('../models/administradorAgente');
 const Zona=require('../module_generales/models/zona');
 const InmuebleComprobante = require('../models/inmuebleComprobante'); 
 const InmuebleReportado = require('../models/inmuebleReportado'); 
-const PlanesPagoPublicacion = require('../models/planesPagoPublicacion'); 
+const PlanesPagoPublicacion = require('../module_generales/models/planesPagoPublicacion'); 
 const InmuebleDarBaja = require('../models/inmuebleDarBaja');
 const InmuebleVendido = require('../models/inmuebleVendido');
 const InmuebleQueja=require('../module_inmueble/models/inmuebleQueja');
@@ -1910,11 +1910,7 @@ const resolvers={
             }*/
             return "Se registró correctamente";
         },
-        registrarPlanesPagoPublicacion: async(_,{input})=>{
-            let planesPagoPublicaiones=PlanesPagoPublicacion(input);
-            await planesPagoPublicaiones.save();
-            return "Se registró correctamente";
-        },
+        
         
     }
 }

@@ -7,10 +7,14 @@ const Usuario = require('../../models/usuario');
 const VersionesAPP=require('../../../module_generales/models/versionesAPP');
 const AdministradorZona=require('../../models/administradorZona');
 const UsuarioInmuebleBuscado=require('../../models/usuarioInmuebleBuscado');
+const PlanesPagoPublicacion=require('../../../module_generales/models/planesPagoPublicacion');
 const resolversSuperUsuario={
     Query:{
         obtenerMembresiaPlanesPago: async(_,{})=>{
             return await MembresiaPlanesPago.find();
+        },
+        obtenerPlanesPagoPublicacion: async(_,{})=>{
+            return await PlanesPagoPublicacion.find();
         },
         obtenerMembresiaPagosSuperUsuario: async(_,{id})=>{
             var filter1={};
@@ -102,6 +106,10 @@ const resolversSuperUsuario={
             membresiaPlanesPago.activo=input.activo;
             await membresiaPlanesPago.save();
             return "Se guardaron los cambios";
+        },
+        eliminarMembresiaPlanesPago: async(_,{id})=>{
+            await MembresiaPlanesPago.findByIdAndDelete(id);
+            return "Eliminado";
         },
         responderMembresiaPagoSuperUsuario: async(_,{id,id_super_usuario,autorizacion,observaciones})=>{
             let membresia=await MembresiaPago.findById(id);
@@ -196,6 +204,19 @@ const resolversSuperUsuario={
         quitarAdministradorZona:async(_,{id})=>{
             await AdministradorZona.findByIdAndDelete(id);
             return "Quitado";
+        },
+        registrarPlanesPagoPublicacion: async(_,{input})=>{
+            let planesPagoPublicacion=PlanesPagoPublicacion(input);
+            await planesPagoPublicacion.save();
+            return planesPagoPublicacion;
+        },
+        modificarPlanesPagoPublicacion: async(_,{id,input})=>{
+            await PlanesPagoPublicacion.findByIdAndUpdate({_id:id},input);
+            return "Modificado";
+        },
+        eliminarPlanesPagoPublicacion: async(_,{id})=>{
+            await PlanesPagoPublicacion.findByIdAndDelete(id);
+            return "Eliminado";
         }
     }
 }

@@ -295,11 +295,6 @@
         email:String
     }
     
-    input PlanesPagoPublicacionInput{
-        nombre_plan:String
-        monto:Int
-        activo:Boolean
-    }
     type UsuarioInmuebleBuscado{
         id:ID
         nombre_configuracion:String
@@ -479,7 +474,7 @@
         obtenerEmailClaveVerificaciones(email:String,clave:Int):EmailClaveVerificaciones
         buscarUsuarioEmail(email:String) : Usuario
         actualizarInmuebleBase(id_usuario:ID,input_visto:UsuarioInmuebleBaseInput,input_doble_visto:UsuarioInmuebleBaseInput,input_favorito:UsuarioInmuebleBaseInput): String
-        registrarPlanesPagoPublicacion(input:PlanesPagoPublicacionInput):String
+        
         registrarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):UsuarioInmuebleBuscado
         modificarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):String
         modificarUsuarioInmuebleBuscadoPersonales(id:ID,nombre_configuracion:String,numero_telefono:String):String

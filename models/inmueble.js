@@ -100,7 +100,10 @@ const InmuebleSchema = new mongoose.Schema({
     habilitado_credito: {
         type: Boolean
     },
-    
+    detalles_generales:{
+        type:String,
+        default:""
+    },
     //caracteristicas internas
     plantas:{
         type: Number
@@ -180,6 +183,10 @@ const InmuebleSchema = new mongoose.Schema({
     amurallado_terreno:{
         type: Boolean
     },
+    detalles_internas:{
+        type:String,
+        default:""
+    },
     //comunidad
     iglesia: {
         type: Boolean
@@ -214,6 +221,10 @@ const InmuebleSchema = new mongoose.Schema({
     zona_comercial: {
         type: Boolean
     },
+    detalles_comunidad:{
+        type:String,
+        default:""
+    },
     //otros
     remates_judiciales:{
         type: Boolean
@@ -229,6 +240,10 @@ const InmuebleSchema = new mongoose.Schema({
     },
     video_tour_360_link:{
         type: String
+    },
+    detalles_otros:{
+        type:String,
+        default:""
     },
     //llaves foraneas
     imagenes: {

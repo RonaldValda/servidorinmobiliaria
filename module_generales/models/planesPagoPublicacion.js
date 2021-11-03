@@ -2,16 +2,16 @@ const mongoose = require('mongoose');
 
 const PlanesPagoPublicacionSchema = new mongoose.Schema({
     nombre_plan:{
-        type: String
+        type: String,
+        default: ""
     },
-    plan:{
-        type: Number
-    },
-    monto:{
-        type: String
+    costo:{
+        type: Number,
+        default:0
     },
     activo:{
-        type: Boolean
+        type: Boolean,
+        default:false
     }
 });
 module.exports = mongoose.model('PlanesPagoPublicacion', PlanesPagoPublicacionSchema);

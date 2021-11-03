@@ -1,6 +1,7 @@
 extend type Query{
     obtenerCuentasBancos:[CuentaBanco]
     obtenerMembresiaPlanesPago:[MembresiaPlanesPago]
+    obtenerPlanesPagoPublicacion:[PlanesPagoPublicacion]
     obtenerVersionesAPP:VersionesAPP
     obtener:[RegistroAds]
     obtenerNotificacionesSuperUsuario(id:ID):NotificacionesSuperUsuario
@@ -31,6 +32,17 @@ input MembresiaPlanesPagoInput{
     costo:Int
     activo:Boolean
 }
+type PlanesPagoPublicacion{
+    id:ID
+    nombre_plan:String
+    costo:Int
+    activo:Boolean
+}
+input PlanesPagoPublicacionInput{
+    nombre_plan:String
+    costo:Int
+    activo:Boolean
+}
 type VersionesAPP{
     id:ID
     numero_version:String
@@ -42,6 +54,7 @@ input VersionesAPPInput{
     fecha_publicacion:Date
     link_descarga:String
 }
+
 extend type Mutation{
     RegistrarAd(id_ad : String,tipo_ad : String) : RegistroAds
     EliminarAd(id : String) : String
@@ -49,6 +62,10 @@ extend type Mutation{
     registrarCuentaBanco(input: CuentaBancoInput) : CuentaBanco
     registrarMembresiaPlanesPago(input:MembresiaPlanesPagoInput):MembresiaPlanesPago
     modificarMembresiaPlanesPago(id:ID,input:MembresiaPlanesPagoInput):String
+    eliminarMembresiaPlanesPago(id:ID):String
+    registrarPlanesPagoPublicacion(input:PlanesPagoPublicacionInput):PlanesPagoPublicacion
+    modificarPlanesPagoPublicacion(id:ID,input:PlanesPagoPublicacionInput):String
+    eliminarPlanesPagoPublicacion(id:ID):String
     responderSolicitudAdministradorSuperUsuario(id:ID,id_super_usuario:ID,id_solicitud:ID,input:SolicitudesAdministradoresInput):String
     responderMembresiaPagoSuperUsuario(id:ID,id_super_usuario:ID,autorizacion:String,observaciones:String) : MembresiaPago
     responderReporteInmueble(id_solicitud:ID,input:InmuebleReportadoInput) : InmuebleReportado

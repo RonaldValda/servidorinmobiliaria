@@ -42,6 +42,7 @@ type Inmueble{
     preparado_discapacidad:Boolean
     papeles_orden:Boolean
     habilitado_credito: Boolean
+    detalles_generales:String
     plantas: Int
     ambientes: Int
     dormitorios: Int
@@ -68,6 +69,7 @@ type Inmueble{
     balcon: Boolean
     tienda: Boolean
     amurallado_terreno: Boolean
+    detalles_internas:String
     iglesia: Boolean
     parque_infantil: Boolean
     escuela: Boolean
@@ -80,10 +82,12 @@ type Inmueble{
     puesto_salud:Boolean
     zona_comercial: Boolean
     remates_judiciales: Boolean
+    detalles_comunidad:String
     imagenes_2D_link: String
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
+    detalles_otros:String
     fecha_creacion: Date
     fecha_publicacion: Date
     autorizacion: String
@@ -217,6 +221,7 @@ input InmuebleInput{
     preparado_discapacidad:Boolean
     papeles_orden:Boolean
     habilitado_credito: Boolean
+    detalles_generales:String
     plantas: Int
     ambientes: Int
     dormitorios: Int
@@ -243,6 +248,7 @@ input InmuebleInput{
     balcon: Boolean
     tienda: Boolean
     amurallado_terreno: Boolean
+    detalles_internas:String
     iglesia: Boolean
     parque_infantil: Boolean
     escuela: Boolean
@@ -254,11 +260,13 @@ input InmuebleInput{
     centro_deportivo:Boolean
     puesto_salud:Boolean
     zona_comercial: Boolean
+    detalles_comunidad:String
     remates_judiciales: Boolean
     imagenes_2D_link: String
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
+    detalles_otros:String
 }
 
 type InmuebleFavorito{
