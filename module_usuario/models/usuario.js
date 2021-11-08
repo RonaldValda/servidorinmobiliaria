@@ -1,5 +1,9 @@
 const mongoose = require('mongoose');
 const UsuarioSchema = mongoose.Schema({
+    link_foto:{
+        type:String,
+        default:""
+    },
     nombres: {
         type: String,
         trim: true

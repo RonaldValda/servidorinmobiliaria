@@ -21,6 +21,7 @@
     }
     type Usuario {
         id: ID
+        link_foto: String
         nombres: String
         apellidos: String
         imei_telefono: String
@@ -47,6 +48,7 @@
     }
 
     input UsuarioInput {
+        link_foto: String
         nombres: String
         apellidos: String
         imei_telefono: String
@@ -464,6 +466,7 @@
     }
     extend type Mutation {
         crearModificarUsuario(input: UsuarioInput,actividad:String) : Usuario
+        modificarUsuario(input: UsuarioInput):String
         autenticarUsuario(input: UsuarioInput) : Usuario
         responderSolicitudUsuarioCalificacion(id_solicitud:ID,calificacion:Int):String
         modificarEstadoInmuebleVendedor(id_inmueble:ID,tipo_accion:String,input_dar_baja:InmuebleDarBajaInput,input_vendido:InmuebleVendidoInput):String

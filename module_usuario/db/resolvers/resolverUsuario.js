@@ -80,24 +80,36 @@ const resolversUsuario={
                     throw new Error('El usuario ya está registrado');
                 }
             }else{
-                if(actividad=="Recuperar"){
+                if(actividad=="Recuperar"||actividad=="Modificar"){
                     throw new Error('El usuario no está registrado');
                 }
             }
             try{
                 //hashear password
                 const salt = await bcryptjs.genSalt(10);
-                input.password = await bcryptjs.hash(password,salt);
+                if(input.password!=""){
+                    input.password = await bcryptjs.hash(password,salt);
+                }
                 if(actividad=="Registrar"){
                     const nuevoUsuario = new Usuario(input);
                     await nuevoUsuario.save();
                 }else if(actividad=="Recuperar"){
                     usuario=await Usuario.findOne({email:input.email});
                     usuario.password=input.password;
-                    usuario.save();
+                    await usuario.save();
                     //await Usuario.findOneAndUpdate({email:input.email},input);
                 }else{
-
+                    usuario=await Usuario.findOne({email:input.email});
+                    usuario.link_foto=input.link_foto;
+                    usuario.nombres=input.nombres;
+                    usuario.apellidos=input.apellidos;
+                    usuario.nombre_agencia=input.nombre_agencia;
+                    usuario.web=input.web;
+                    usuario.telefono=input.telefono;
+                    if(input.password!=""){
+                        usuario.password=input.password;
+                    }
+                    await usuario.save();
                 }
                 
                 usuario=await Usuario.findOne({email:input.email})
@@ -112,6 +124,37 @@ const resolversUsuario={
                     populate:{path:"administrador"}});
                 return usuario;
                 
+            }catch(error){
+                console.log(error);
+            }
+            
+        },
+        modificarUsuario: async (_,{input}) => {
+            const {email,password}=input;
+            const existeUsuario = await Usuario.findOne({ email });
+            if(!existeUsuario){
+                throw new Error('El usuario no está registrado');
+            }
+            
+            try{
+                
+                if(input.password!=""){
+                    
+                    const salt = await bcryptjs.genSalt(10);
+                    input.password = await bcryptjs.hash(password,salt);
+                }
+                existeUsuario.link_foto=input.link_foto;
+                existeUsuario.nombres=input.nombres;
+                existeUsuario.apellidos=input.apellidos;
+                existeUsuario.nombre_agencia=input.nombre_agencia;
+                existeUsuario.web=input.web;
+                existeUsuario.telefono=input.telefono;
+                if(input.password!=""){
+                    existeUsuario.password=input.password;
+                }
+                console.log(existeUsuario.nombres);
+                await existeUsuario.save();
+                return "Modificado";
             }catch(error){
                 console.log(error);
             }
@@ -288,7 +331,7 @@ const resolversUsuario={
             return "Guardado";
         },
         registrarEmailClaveVerificaciones: async(_,{input,actividad})=>{
-            let usuario=await Usuario.find({email:input.email});
+            let usuario=await Usuario.findOne({email:input.email});
             if(usuario){
                 if(actividad=="Registrar"){
                     throw new Error("El email ya está registrado");
@@ -348,11 +391,12 @@ const resolversUsuario={
             }
             return usuario;
         },
-        registrarSolicitudInscripcionAgente: async(_,{id_usuario_solicitante,agencia,web,ciudad,link_respaldo_solicitud})=>{
+        registrarSolicitudInscripcionAgente: async(_,{id_usuario_solicitante,agencia,web,telefono,ciudad,link_respaldo_solicitud})=>{
             const usuario=await Usuario.findById(id_usuario_solicitante);  
             usuario.nombre_agencia=agencia;
             usuario.ciudad=ciudad;
             usuario.web=web;
+            usuario.telefono=telefono;
             const inscripcionAgente=InscripcionAgente(input);
             inscripcionAgente.usuario_solicitante=id_usuario_solicitante;
             inscripcionAgente.link_respaldo_solicitud=link_respaldo_solicitud;
