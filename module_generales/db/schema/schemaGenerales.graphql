@@ -36,6 +36,30 @@ input BancoInput{
     app:String
     pre_aprobacion:String
 }
+type Publicidad{
+    id:ID
+    precio_min:Int
+    precio_max:Int
+    tipo_contrato:String
+    tipo_inmueble:String
+    tipo_publicidad:String
+    descripcion_publicidad:String
+    link_imagen_publicidad:String
+    link_web_publicidad:String
+    fecha_creacion:Date
+    fecha_vencimiento:Date
+}
+input PublicidadInput{
+    precio_min:Int
+    precio_max:Int
+    tipo_contrato:String
+    tipo_inmueble:String
+    tipo_publicidad:String
+    descripcion_publicidad:String
+    link_imagen_publicidad:String
+    link_web_publicidad:String
+    meses_vigencia:Int
+}
 extend type Mutation{
     registrarCiudad(id_departamento:ID,nombre_ciudad:String):Ciudad
     modificarCiudad(id:ID,nombre_ciudad:String):String
@@ -49,6 +73,9 @@ extend type Mutation{
     registrarBanco(input:BancoInput):Banco
     modificarBanco(id:ID,input:BancoInput):String
     eliminarBanco(id:ID):String
+    registrarPublicidad(input:PublicidadInput):Publicidad
+    modificarPublicidad(id:ID,input:PublicidadInput):Publicidad
+    eliminarPublicidad(id:ID):String
 }
 extend type Query{
     obtenerDepartamentos:[Departamento]
@@ -56,4 +83,5 @@ extend type Query{
     obtenerZonas(id_ciudad:ID):[Zona]
     obtenerGeneralesLugares:generalesLugares
     obtenerBancos:[Banco]
+    obtenerPublicidad:[Publicidad]
 }

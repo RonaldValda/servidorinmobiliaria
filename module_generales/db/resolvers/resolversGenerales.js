@@ -3,6 +3,7 @@ const Ciudad=require('../../models/ciudad');
 const Departamento=require('../../models/departamento');
 const VersionesAPP=require('../../models/versionesAPP');
 const Banco=require('../../models/banco');
+const Publicidad=require('../../models/publicidad');
 const resolversGenerales={
     Query:{
         obtenerZonas: async(_,{id_ciudad})=>{
@@ -33,6 +34,10 @@ const resolversGenerales={
         obtenerBancos: async(_,{})=>{
             let bancos=await Banco.find({});
             return bancos;
+        },
+        obtenerPublicidad: async(_,{})=>{
+            let publicidad=await Publicidad.find({});
+            return publicidad;
         }
     },
     Mutation:{
@@ -97,6 +102,36 @@ const resolversGenerales={
         },
         eliminarBanco: async(_,{id})=>{
             await Banco.findByIdAndDelete(id);
+            return "Eliminado";
+        },
+        registrarPublicidad: async(_,{input})=>{
+            const publicidad=Publicidad(input);
+            var fecha=new Date();
+            var fechaVigencia=new Date();
+            publicidad.fecha_creacion=fecha;
+            fechaVigencia.setMonth(fecha.getMonth()+input.meses_vigencia);
+            publicidad.fecha_vencimiento=fechaVigencia;
+            await publicidad.save();
+            return publicidad;
+        },
+        modificarPublicidad: async(_,{id,input})=>{
+            const publicidad=await Publicidad.findById(id);
+            var fecha=publicidad.fecha_creacion;
+            fecha.setMonth(fecha.getMonth()+input.meses_vigencia);
+            publicidad.fecha_vencimiento=fecha;
+            publicidad.precio_min=input.precio_min;
+            publicidad.precio_max=input.precio_max;
+            publicidad.tipo_contrato=input.tipo_contrato;
+            publicidad.tipo_inmueble=input.tipo_inmueble;
+            publicidad.tipo_publicidad=input.tipo_publicidad;
+            publicidad.descripcion_publicidad=input.descripcion_publicidad;
+            publicidad.link_imagen_publicidad=input.link_imagen_publicidad;
+            publicidad.link_web_publicidad=input.link_web_publicidad;
+            await publicidad.save();
+            return publicidad;
+        },
+        eliminarPublicidad: async(_,{id})=>{
+            await Publicidad.findByIdAndDelete(id);
             return "Eliminado";
         }
     }
