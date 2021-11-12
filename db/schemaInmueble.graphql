@@ -1,5 +1,5 @@
 extend type Query {
-    obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :[Inmueble]
+    obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :InmueblesPublicidad
     obtenerInmueblesNuevos(input: ObtenerInmuebleNuevoInput): [Inmueble]
     obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
@@ -7,7 +7,10 @@ extend type Query {
     
 }
 scalar Date
-
+type InmueblesPublicidad{
+    inmuebles:[Inmueble]
+    publicidades:[Publicidad]
+}
 type Inmueble{
     id: ID
     indice: Int

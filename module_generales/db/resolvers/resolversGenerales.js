@@ -38,6 +38,12 @@ const resolversGenerales={
         obtenerPublicidad: async(_,{})=>{
             let publicidad=await Publicidad.find({});
             return publicidad;
+        },
+        obtenerPublicidadCiudad: async(_,{ciudad})=>{
+            var filtro={};
+            filtro.ciudad=ciudad;
+            let publicidad=await Publicidad.find(ciudad);
+            return publicidad;
         }
     },
     Mutation:{
@@ -119,6 +125,7 @@ const resolversGenerales={
             var fecha=publicidad.fecha_creacion;
             fecha.setMonth(fecha.getMonth()+input.meses_vigencia);
             publicidad.fecha_vencimiento=fecha;
+            publicidad.ciudad=input.ciudad;
             publicidad.precio_min=input.precio_min;
             publicidad.precio_max=input.precio_max;
             publicidad.tipo_contrato=input.tipo_contrato;

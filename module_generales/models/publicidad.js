@@ -1,6 +1,9 @@
 const mongoose = require('mongoose');
 
 const PublicidadSchema = new mongoose.Schema({
+    ciudad:{
+        type:String
+    },
     precio_min:{
         type:Number
     },

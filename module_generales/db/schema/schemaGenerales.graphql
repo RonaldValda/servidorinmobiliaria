@@ -38,6 +38,7 @@ input BancoInput{
 }
 type Publicidad{
     id:ID
+    ciudad:String
     precio_min:Int
     precio_max:Int
     tipo_contrato:String
@@ -50,6 +51,7 @@ type Publicidad{
     fecha_vencimiento:Date
 }
 input PublicidadInput{
+    ciudad:String
     precio_min:Int
     precio_max:Int
     tipo_contrato:String
@@ -84,4 +86,5 @@ extend type Query{
     obtenerGeneralesLugares:generalesLugares
     obtenerBancos:[Banco]
     obtenerPublicidad:[Publicidad]
+    obtenerPublicidadCiudad:[Publicidad]
 }
