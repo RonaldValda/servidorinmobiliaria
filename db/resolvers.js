@@ -145,6 +145,31 @@ const resolvers={
             //console.log(cantidad);
             return resultado;
         },
+        obtenerInmueblesEntreFechas: async (_,{id_usuario,ciudad,fecha_inicial,fecha_final})=>{
+            var filter1={};
+            var resultado={};
+            filter1.ciudad={$in:ciudad};
+            filter1.fecha_publicacion={$gte:fecha_inicial,$lte:fecha_final};
+            const inmuebles=Inmueble.find(filter1);
+            let filter2={};
+            filter2.usuario={$in:""};
+            if(id_usuario!=""){
+                await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
+                .populate({path:"imagenes"})
+                .populate({
+                    path:"usuarios_favorito",match:{"usuario":id_usuario},
+                    populate:{path:"usuario"}});
+            }else{
+                await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
+                .populate({path:"imagenes"})
+                .populate({
+                    path:"usuarios_favorito",match:{filter2},
+                    populate:{path:"usuario"}});
+            }
+            return inmuebles;
+        },
         obtenerInmueblesPendiente: async (_,{input1})=>{
             var filter1={};
             filter1.autorizacion="Pendiente";
