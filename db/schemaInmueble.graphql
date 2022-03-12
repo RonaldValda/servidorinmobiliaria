@@ -1,5 +1,6 @@
 extend type Query {
     obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :InmueblesPublicidad
+    obtenerInmueblesEntreFechas(id_usuario:ID,ciudad:String,fecha_inicial:String,fecha_final:String):[Inmueble]
     obtenerInmueblesNuevos(input: ObtenerInmuebleNuevoInput): [Inmueble]
     obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]

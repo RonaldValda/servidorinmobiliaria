@@ -31,10 +31,10 @@ const resolversSuperUsuario={
         },
         obtenerNotificacionesSuperUsuario:async (_,{id})=>{
             var filter={};
-            filter.usuario_respondedor=id;
+            //filter.usuario_respondedor=id;
             filter.respuesta="";
             var respuesta={};
-            respuesta.reportar_inmueble=await InmuebleReportado.find(filter)
+            respuesta.reportar_inmueble=await InmuebleReportado.find({})
                                         .populate({path:"usuario_solicitante"})
                                         .populate({path:"inmueble",populate:{path:"imagenes"}})
                                         .populate({path:"inmueble",populate:{path:"creador"}});

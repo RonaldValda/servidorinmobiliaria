@@ -465,6 +465,7 @@
         usuario_respondedor:Usuario
     }
     extend type Mutation {
+        eliminarUsuarioEmail(email:String):String
         crearModificarUsuario(input: UsuarioInput,actividad:String) : Usuario
         modificarUsuario(input: UsuarioInput):String
         autenticarUsuario(input: UsuarioInput) : Usuario

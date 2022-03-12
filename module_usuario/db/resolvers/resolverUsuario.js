@@ -67,6 +67,12 @@ const resolversUsuario={
         }
     },
     Mutation:{
+        eliminarUsuarioEmail: async(_,{email})=>{
+            var filtro={};
+            filtro.email=email;
+            await Usuario.findOneAndDelete(filtro);
+            return "";
+        },
         crearModificarUsuario: async (_,{input,actividad}) => {
             const {email,password}=input;
             const existeUsuario = await Usuario.findOne({ email });
@@ -372,6 +378,8 @@ const resolversUsuario={
             if(emailClaveVerificaciones){
                 let usuario=await Usuario.findOne({email:email});
                 emailClaveVerificaciones.usuario=usuario;
+            }else{
+                throw new Error("Verificación incorrecta");
             }
             return emailClaveVerificaciones;
         },
