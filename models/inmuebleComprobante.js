@@ -7,8 +7,8 @@ const InmuebleComprobanteSchema = new mongoose.Schema({
     monto_pago:{
         type:Number,
     },
-    plan:{
-        type: Number
+    nombre_plan:{
+        type: String
     },
     numero_transaccion:{
         type:String

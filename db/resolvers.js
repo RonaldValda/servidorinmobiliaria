@@ -145,6 +145,31 @@ const resolvers={
             //console.log(cantidad);
             return resultado;
         },
+        obtenerInmueblesEntreFechas: async (_,{id_usuario,ciudad,fecha_inicial,fecha_final})=>{
+            var filter1={};
+            var resultado={};
+            filter1.ciudad={$in:ciudad};
+            filter1.fecha_publicacion={$gte:fecha_inicial,$lte:fecha_final};
+            const inmuebles=Inmueble.find(filter1);
+            let filter2={};
+            filter2.usuario={$in:""};
+            if(id_usuario!=""){
+                await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
+                .populate({path:"imagenes"})
+                .populate({
+                    path:"usuarios_favorito",match:{"usuario":id_usuario},
+                    populate:{path:"usuario"}});
+            }else{
+                await inmuebles.find({}).populate("creador",{})
+                .populate({path:"propietario"})
+                .populate({path:"imagenes"})
+                .populate({
+                    path:"usuarios_favorito",match:{filter2},
+                    populate:{path:"usuario"}});
+            }
+            return inmuebles;
+        },
         obtenerInmueblesPendiente: async (_,{input1})=>{
             var filter1={};
             filter1.autorizacion="Pendiente";
@@ -592,7 +617,7 @@ const resolvers={
             await Agencia.findByIdAndDelete({_id: id});
             return "Agencia eliminada";
         },
-        registrarInmueble: async (_,{id_creador,id_propietario,input1,input2}) => {
+        registrarInmueble: async (_,{id_creador,id_propietario,input1,input2,input3}) => {
             try{
                 let secuencia=await SecuenciasIndices.findOne();
                 if(!secuencia){
@@ -608,6 +633,47 @@ const resolvers={
                 const inmuebleImagenes=new InmuebleImagenes(input2);
                 inmuebleImagenes.inmueble=nuevoInmueble.id;
                 nuevoInmueble.imagenes=inmuebleImagenes.id;
+                //Si registra el comprobante si es que tiene
+                if(input3.link_imagen_deposito!=""){
+                    const inmuebleComprobante=InmuebleComprobante();
+                    inmuebleComprobante.link_imagen_deposito=input3.link_imagen_deposito;
+                    inmuebleComprobante.nombre_depositante=input3.nombre_depositante;
+                    inmuebleComprobante.medio_pago=input3.medio_pago;
+                    inmuebleComprobante.monto_pago=input3.monto_pago;
+                    inmuebleComprobante.plan=input3.plan;
+                    inmuebleComprobante.cuenta_banco=input3.cuenta_banco;
+                    inmuebleComprobante.numero_transaccion=input3.numero_transaccion;
+                    inmuebleComprobante.inmueble=nuevoInmueble.id;
+                    nuevoInmueble.comprobante=inmuebleComprobante.id;
+                    await inmuebleComprobante.save();
+                }
+                //Se registra en la bitacora el envio de la solicitud para dar de alta el inmueble creado
+                let bitacoraInmueble=await BitacoraInmueble();
+                bitacoraInmueble.usuario=id_creador;
+                bitacoraInmueble.inmueble=nuevoInmueble.id;
+                bitacoraInmueble.actividad="Envío de solicitud para dar de alta el inmueble creado";
+                await bitacoraInmueble.save();
+                //Se crea un registro para el que administrá el inmueble
+                let administradorInmueble=await AdministradorImmueble();
+                administradorInmueble.tipo_solicitud="Dar alta";
+                administradorInmueble.respuesta="";
+                administradorInmueble.observaciones="";
+                administradorInmueble.link_respaldo_solicitud="";
+                administradorInmueble.link_respaldo_respuesta="";
+                administradorInmueble.inmueble=nuevoInmueble.id;
+                administradorInmueble.usuario_solicitante=id_creador;
+                await administradorInmueble.save();
+                //Se crea la solicitud al administrador para dar de alta el inmueble creado
+                let solicitudesAdministradores=await SolicitudesAdministradores();
+                solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
+                solicitudesAdministradores.tipo_solicitud="Dar alta";
+                solicitudesAdministradores.fecha_solicitud=administradorInmueble.fecha_solicitud;
+                solicitudesAdministradores.respuesta="";
+                solicitudesAdministradores.observaciones="";
+                solicitudesAdministradores.link_respaldo_solicitud="";
+                solicitudesAdministradores.link_respaldo_respuesta="";
+                solicitudesAdministradores.usuario_solicitante=id_creador;
+                await solicitudesAdministradores.save();
                 await nuevoInmueble.save();
                 await inmuebleImagenes.save();
                 secuencia.indice_inmuebles=secuencia.indice_inmuebles+1;
@@ -619,7 +685,6 @@ const resolvers={
                 .populate({
                     path:"usuarios_favorito",match:{"usuario":nuevoInmueble.creador},
                     populate:{path:"usuario"}});
-                console.log("imprimiendo resultado  ",resultado);
                 return resultado;
             }catch(error){
                 console.log(error);
@@ -1807,7 +1872,7 @@ const resolvers={
                     inmuebleComprobante.nombre_depositante=nombres[numero_aleatorio];
                     inmuebleComprobante.medio_pago="Depósito";
                     inmuebleComprobante.monto_pago=30;
-                    inmuebleComprobante.plan=1;
+                    inmuebleComprobante.nombre_plan="Pro";
                     inmuebleComprobante.cuenta_banco="612febf03b43f416c48b72b9";
                     inmuebleComprobante.numero_transaccion="123561565";
                     inmuebleComprobante.inmueble=inmueble.id;
