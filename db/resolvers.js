@@ -23,7 +23,8 @@ const PlanesPagoPublicacion = require('../module_generales/models/planesPagoPubl
 const InmuebleDarBaja = require('../models/inmuebleDarBaja');
 const InmuebleVendido = require('../models/inmuebleVendido');
 const InmuebleQueja=require('../module_inmueble/models/inmuebleQueja');
-const Publicidad=require('../module_generales/models/publicidad')
+const Publicidad=require('../module_generales/models/publicidad');
+const InmuebleNota=require('../models/inmuebleNota');
 require('dotenv').config({path: 'variables.env'})
 //const { PubSub } = require('graphql-subscriptions')
 
@@ -465,7 +466,12 @@ const resolvers={
             let solicitudes=await SolicitudesAdministradores.find(filter1);
             return solicitudes;
         },
-        
+        buscarInmuebleNota: async(_,{id_inmueble,id_usuario})=>{
+            var filtro={};
+            filtro.inmueble=id_inmueble;
+            filtro.usuario=id_usuario;
+            return await InmuebleNota.findOne(filtro);
+        }
     },
 
     /*Subscription: {
@@ -616,6 +622,27 @@ const resolvers={
 
             await Agencia.findByIdAndDelete({_id: id});
             return "Agencia eliminada";
+        },
+        guardarInmuebleNota: async(_,{id_inmueble,id_usuario,nota})=>{
+            var filtro={};
+            filtro.inmueble=id_inmueble;
+            filtro.usuario=id_usuario;
+            var fecha=new Date();
+            let inmuebleNota=await InmuebleNota.findOne(filtro);
+            if(!inmuebleNota){
+                const nuevoInmuebleNota=InmuebleNota();
+                nuevoInmuebleNota.inmueble=id_inmueble;
+                nuevoInmuebleNota.usuario=id_usuario;
+                nuevoInmuebleNota.nota=nota;
+                nuevoInmuebleNota.fecha=fecha;
+                await nuevoInmuebleNota.save();
+                return nuevoInmuebleNota;
+            }else{
+                inmuebleNota.nota=nota;
+                inmuebleNota.fecha=fecha;
+                await inmuebleNota.save();
+            }
+            return inmuebleNota;
         },
         registrarInmueble: async (_,{id_creador,id_propietario,input1,input2,input3}) => {
             try{
@@ -1392,8 +1419,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=10;
-            var max=10;
+            var min=4;
+            var max=4;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1666,7 +1693,7 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.autorizacion="Activo";
+                inmueble.autorizacion="Pendiente";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
                 

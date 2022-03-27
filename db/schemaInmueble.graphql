@@ -5,7 +5,7 @@ extend type Query {
     obtenerInmueblesPendiente(input1: FiltroSimpleInmuebleInput): [Inmueble]
     obtenerInmueblesAgencia: [Inmueble]
     obtenerMisInmueblesVenta(id: ID): [Inmueble]
-    
+    buscarInmuebleNota(id_inmueble:ID,id_usuario:ID):InmuebleNota
 }
 scalar Date
 type InmueblesPublicidad{
@@ -105,6 +105,13 @@ type Inmueble{
     cantidad_vistos:Int
     cantidad_doble_vistos:Int
     cantidad_favoritos:Int
+}
+type InmuebleNota{
+    id:ID
+    inmueble:ID
+    usuario:ID
+    nota:String
+    fecha:Date
 }
 type InmuebleComprobante{
     id:ID
@@ -443,6 +450,7 @@ extend type Mutation {
     reportarInmueble(id_inmueble:ID,id_solicitante:ID,input:InmuebleReportadoInput) : InmuebleReportado
     registrarInmuebleQueja(id_inmueble:ID,input:InmuebleQuejaInput):InmuebleQueja
     responderInmuebleQueja(id_solicitud:ID,input:InmuebleQuejaInput):InmuebleQueja
+    guardarInmuebleNota(id_inmueble:ID,id_usuario:ID,nota:String):InmuebleNota
 }
 type Subscription {
     inmuebleAdded: Inmueble
