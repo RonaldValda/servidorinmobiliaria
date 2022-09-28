@@ -35,12 +35,16 @@ input MembresiaPlanesPagoInput{
 type PlanesPagoPublicacion{
     id:ID
     nombre_plan:String
+    tipo_plan: String
     costo:Int
+    modificaciones_permitidas:Int
     activo:Boolean
 }
 input PlanesPagoPublicacionInput{
     nombre_plan:String
+    tipo_plan: String
     costo:Int
+    modificaciones_permitidas:Int
     activo:Boolean
 }
 type VersionesAPP{
@@ -60,6 +64,8 @@ extend type Mutation{
     EliminarAd(id : String) : String
     registrarVersionesAPP(input:VersionesAPPInput):String
     registrarCuentaBanco(input: CuentaBancoInput) : CuentaBanco
+    modificarCuentaBanco(id:ID, input:CuentaBancoInput):String
+    eliminarCuentaBanco(id:ID):String
     registrarMembresiaPlanesPago(input:MembresiaPlanesPagoInput):MembresiaPlanesPago
     modificarMembresiaPlanesPago(id:ID,input:MembresiaPlanesPagoInput):String
     eliminarMembresiaPlanesPago(id:ID):String

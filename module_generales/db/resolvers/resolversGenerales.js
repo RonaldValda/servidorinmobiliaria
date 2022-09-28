@@ -103,7 +103,7 @@ const resolversGenerales={
             return banco;
         },
         modificarBanco: async(_,{id,input})=>{
-            await Banco.findByIdAndUpdate({id:id},input);
+            await Banco.findByIdAndUpdate({_id:id},input);
             return "Modificado";
         },
         eliminarBanco: async(_,{id})=>{

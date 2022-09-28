@@ -229,9 +229,6 @@ const InmuebleSchema = new mongoose.Schema({
     remates_judiciales:{
         type: Boolean
     },
-    imagenes_2D_link:{
-        type: String
-    },
     video_2D_link:{
         type: String
     },
@@ -240,6 +237,18 @@ const InmuebleSchema = new mongoose.Schema({
     },
     video_tour_360_link:{
         type: String
+    },
+    contacto_numero:{
+        type: Number,
+        default: 0
+    },
+    contacto_link:{
+        type: String,
+        default: ""
+    },
+    plataforma_citas_link:{
+        type: String,
+        default:""
     },
     detalles_otros:{
         type:String,
@@ -287,7 +296,15 @@ const InmuebleSchema = new mongoose.Schema({
     },
     autorizacion:{
         type: String,
-        default: "Pendiente"
+        default: "Pendiente - Publicar"
+    },
+    modificaciones_permitidas:{
+        type: Number,
+        default:0
+    },
+    contador_modificacion:{
+        type: Number,
+        default:0
     },
     ultima_modificacion:{
         type: Date,

@@ -1,4 +1,4 @@
-extend type Query {
+type Query {
     obtenerInmueblesSimpleFiltro(input1: FiltroSimpleInmuebleInput) :InmueblesPublicidad
     obtenerInmueblesEntreFechas(id_usuario:ID,ciudad:String,fecha_inicial:String,fecha_final:String):[Inmueble]
     obtenerInmueblesNuevos(input: ObtenerInmuebleNuevoInput): [Inmueble]
@@ -87,14 +87,18 @@ type Inmueble{
     zona_comercial: Boolean
     remates_judiciales: Boolean
     detalles_comunidad:String
-    imagenes_2D_link: String
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
+    contacto_numero: Int
+    contacto_link: String
+    plataforma_citas_link: String
     detalles_otros:String
     fecha_creacion: Date
     fecha_publicacion: Date
     autorizacion: String
+    modificaciones_permitidas: Int
+    contador_modificacion: Int
     ultima_modificacion: Date
     calificacion:Int
     categoria:String
@@ -122,6 +126,10 @@ type InmuebleComprobante{
     cuenta_banco:CuentaBanco
     nombre_depositante:String
     link_imagen_deposito:String
+    link_imagen_documento_propiedad:String
+    link_imagen_documento_venta:String
+    link_imagen_dni_propietario:String
+    link_imagen_dni_agente:String
 }
 input InmuebleComprobanteInput{
     medio_pago:String
@@ -131,6 +139,10 @@ input InmuebleComprobanteInput{
     cuenta_banco:String
     nombre_depositante:String
     link_imagen_deposito:String
+    link_imagen_documento_propiedad:String
+    link_imagen_documento_venta:String
+    link_imagen_dni_propietario:String
+    link_imagen_dni_agente:String
 }
 type InmuebleImagenes{
     id:ID
@@ -282,11 +294,14 @@ input InmuebleInput{
     zona_comercial: Boolean
     detalles_comunidad:String
     remates_judiciales: Boolean
-    imagenes_2D_link: String
     video_2D_link: String
     tour_virtual_360_link: String
     video_tour_360_link: String
     detalles_otros:String
+    contacto_numero: Int
+    contacto_link: String
+    plataforma_citas_link: String
+    modificaciones_permitidas: Int
 }
 
 type InmuebleFavorito{
@@ -439,7 +454,7 @@ input FiltroSimpleInmuebleInput{
     id_usuario: String
 }
 
-extend type Mutation {
+type Mutation {
     registrarInmueble(id_creador: ID!,id_propietario: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput,input3: InmuebleComprobanteInput) : Inmueble
     actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput) : String
     actualizarPrecioInmueble(id: ID!, precio: Int) : String
@@ -451,6 +466,7 @@ extend type Mutation {
     registrarInmuebleQueja(id_inmueble:ID,input:InmuebleQuejaInput):InmuebleQueja
     responderInmuebleQueja(id_solicitud:ID,input:InmuebleQuejaInput):InmuebleQueja
     guardarInmuebleNota(id_inmueble:ID,id_usuario:ID,nota:String):InmuebleNota
+    eliminarInmueblesTodos:String
 }
 type Subscription {
     inmuebleAdded: Inmueble

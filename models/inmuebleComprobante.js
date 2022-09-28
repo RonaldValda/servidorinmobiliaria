@@ -23,6 +23,18 @@ const InmuebleComprobanteSchema = new mongoose.Schema({
     link_imagen_deposito:{
         type:String
     },
+    link_imagen_documento_propiedad:{
+        type:String
+    },
+    link_imagen_documento_venta:{
+        type:String
+    },
+    link_imagen_dni_propietario:{
+        type:String
+    },
+    link_imagen_dni_agente:{
+        type:String
+    },
     inmueble: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Inmueble'

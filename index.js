@@ -21,7 +21,6 @@ const fs=require('fs')
 conectarDB();
 const server=new ApolloServer({
     typeDefs:[
-        gql(fs.readFileSync('./db/schema.graphql','utf8')),
         gql(fs.readFileSync(pathSchemaGenerales,'utf8')),
         gql(fs.readFileSync(pathSchemaUsuario,'utf8')),
         gql(fs.readFileSync(pathSchemaAdministrador,'utf8')),

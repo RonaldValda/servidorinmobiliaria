@@ -1,7 +1,5 @@
 
 const Usuario = require('../module_usuario/models/usuario');
-const Proyecto = require('../models/proyecto'); 
-const Tarea = require('../models/tarea');
 const Inmueble = require('../models/inmueble'); 
 const InmuebleImagenes = require('../models/inmuebleImagenes'); 
 const Agencia = require('../models/agencia');
@@ -43,24 +41,6 @@ const enviarEmail=()=>{
 }
 const resolvers={
     Query:{
-        obtenerProyectos: async (_,{},ctx)=>{
-            const proyectos = await Proyecto.find({creador: ctx.usuario.id});
-            console.log(ctx.usuario.id);
-            return proyectos;
-        },
-        obtenerTareas: async (_,{input},ctx)=>{
-            //const tareas=await Tarea.find({creador:ctx.usuario.id}).where('proyecto').equals(input.proyecto);
-            //const tareas=await Tarea.find().where('proyecto').equals(input.proyecto);
-            const filter={"proyecto":input.proyecto};
-           //const tareas=await Tarea.find(filter);
-            //const tareas=await Tarea.find((tarea)=>tarea.proyecto===input.proyecto);
-            const tareas=await Tarea.find(filter);
-            /*const tareas=await Tarea.find((a)=>{
-                a.proyecto===input.proyecto;
-            });*/
-            console.log("proyecto ",input.proyecto);
-            return tareas;
-        },
         obtenerUsuarios: async(_,{})=>{
             const usuarios=await Usuario.find();
             //console.log()
@@ -480,98 +460,10 @@ const resolvers={
         }
     },*/
     Mutation: {
-       
-        nuevoProyecto: async (_,{input},ctx)=>{
-            //console.log('DESDE RESOLVER', ctx);
-            //asociar el creador al proyecto
-            
-            try{
-                const proyecto = Proyecto(input);
-                proyecto.creador = ctx.usuario.id;
-                //almacenar en BD
-                const resultado=await proyecto.save();
-
-                return resultado;
-            }catch(error){
-                console.log(error);
-            }
-        },
-        actualizarProyecto: async (_,{id,input},ctx)=>{
-            //revisar si el proyecto existe o no
-
-            let proyecto = await Proyecto.findById(id)
-
-            if(!proyecto){
-                throw new Error('Proyecto no encontrado');
-            }
-            //revisar si la persona que trata de editarlo es el crador
-            if(proyecto.creador.toString() !== ctx.usuario.id){
-                throw new Error('No tienes las credenciales para editar')
-            }
-            //guardar el proyecto
-            proyecto = await Proyecto.findOneAndUpdate({_id: id},input,{new: true});
-            return proyecto;
-        },
-        eliminarProyecto: async (_,{id},ctx)=>{
-            //revisar si el proyecto existe o no
-
-            let proyecto = await Proyecto.findById(id)
-
-            if(!proyecto){
-                throw new Error('Proyecto no encontrado');
-            }
-            //revisar si la persona que trata de editarlo es el crador
-            if(proyecto.creador.toString() !== ctx.usuario.id){
-                throw new Error('No tienes las credenciales para editar')
-            }
-
-            //eliminar proyecto
-            await Proyecto.findOneAndDelete({_id : id});
-            return "Proyecto eliminado";
-        },
-        nuevaTarea: async (_,{input},ctx)=>{
-            try{
-                const tarea = new Tarea(input);
-                tarea.creador = ctx.usuario.id;
-                const resultado=await tarea.save();
-                return resultado;
-            }catch(error){  
-                console.log(error);
-            }
-        },
-        actualizarTarea: async (_,{id,input,estado},ctx)=>{
-            //revisar si la tarea existe
-            let tarea=await Tarea.findById(id);
-
-            if(!tarea){
-                throw new Error('Tarea no encontrada');
-            }
-            //revisar si la persona que lo edita es el propietario
-            if(tarea.creador.toString() !== ctx.usuario.id){
-                throw new Error('No tienes las credenciales para editar')
-            }
-            //asignar estado
-            input.estado=estado;
-            //guardar y retornar tarea
-            tarea = await Tarea.findOneAndUpdate({_id: id},input,{new: true});
-            return tarea;
-        },
-        eliminarTarea: async (_,{id},ctx)=>{
-            //si la tarea existe o no 
-            let tarea = await Tarea.findById(id);
-            if(!tarea){
-                throw new Error('Tarea no encontrada');
-            }
-            //si la persona que elimina no es el creador
-            if(tarea.creador.toString()!==ctx.usuario.id){
-                throw new Error('No tienes las credenciales para eliminar');
-            }
-
-            //eliminar
-            await Tarea.findByIdAndDelete({_id: id});
-
-            return "Tarea eliminada";
-        },
+       eliminarInmueblesTodos: async(_,{},ctx)=>{
+        await Inmueble.remove();
+        return "Eliminado";
+       },
         RegistrarAd: async (_,{id_ad,tipo_ad})=>{
             try{
                 const registroAds = RegistroAds();
@@ -661,28 +553,34 @@ const resolvers={
                 inmuebleImagenes.inmueble=nuevoInmueble.id;
                 nuevoInmueble.imagenes=inmuebleImagenes.id;
                 //Si registra el comprobante si es que tiene
-                if(input3.link_imagen_deposito!=""){
-                    const inmuebleComprobante=InmuebleComprobante();
-                    inmuebleComprobante.link_imagen_deposito=input3.link_imagen_deposito;
-                    inmuebleComprobante.nombre_depositante=input3.nombre_depositante;
-                    inmuebleComprobante.medio_pago=input3.medio_pago;
-                    inmuebleComprobante.monto_pago=input3.monto_pago;
-                    inmuebleComprobante.plan=input3.plan;
+                //if(input3.link_imagen_deposito!=""){
+                const inmuebleComprobante=InmuebleComprobante();
+                inmuebleComprobante.link_imagen_deposito=input3.link_imagen_deposito;
+                inmuebleComprobante.nombre_depositante=input3.nombre_depositante;
+                inmuebleComprobante.medio_pago=input3.medio_pago;
+                inmuebleComprobante.monto_pago=input3.monto_pago;
+                inmuebleComprobante.nombre_plan=input3.nombre_plan;
+                if(input3.cuenta_banco!=""){
                     inmuebleComprobante.cuenta_banco=input3.cuenta_banco;
-                    inmuebleComprobante.numero_transaccion=input3.numero_transaccion;
-                    inmuebleComprobante.inmueble=nuevoInmueble.id;
-                    nuevoInmueble.comprobante=inmuebleComprobante.id;
-                    await inmuebleComprobante.save();
                 }
+                inmuebleComprobante.numero_transaccion=input3.numero_transaccion;
+                inmuebleComprobante.link_imagen_documento_propiedad=input3.link_imagen_documento_propiedad;
+                inmuebleComprobante.link_imagen_documento_venta=input3.link_imagen_documento_venta;
+                inmuebleComprobante.link_imagen_dni_propietario=input3.link_imagen_dni_propietario;
+                inmuebleComprobante.link_imagen_dni_agente=input3.link_imagen_dni_agente;
+                inmuebleComprobante.inmueble=nuevoInmueble.id;
+                nuevoInmueble.comprobante=inmuebleComprobante.id;
+                await inmuebleComprobante.save();
+                //}
                 //Se registra en la bitacora el envio de la solicitud para dar de alta el inmueble creado
                 let bitacoraInmueble=await BitacoraInmueble();
                 bitacoraInmueble.usuario=id_creador;
                 bitacoraInmueble.inmueble=nuevoInmueble.id;
-                bitacoraInmueble.actividad="Envío de solicitud para dar de alta el inmueble creado";
+                bitacoraInmueble.actividad="Envío de solicitud para publicar el inmueble";
                 await bitacoraInmueble.save();
                 //Se crea un registro para el que administrá el inmueble
                 let administradorInmueble=await AdministradorImmueble();
-                administradorInmueble.tipo_solicitud="Dar alta";
+                administradorInmueble.tipo_solicitud="Publicar";
                 administradorInmueble.respuesta="";
                 administradorInmueble.observaciones="";
                 administradorInmueble.link_respaldo_solicitud="";
@@ -693,7 +591,7 @@ const resolvers={
                 //Se crea la solicitud al administrador para dar de alta el inmueble creado
                 let solicitudesAdministradores=await SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
-                solicitudesAdministradores.tipo_solicitud="Dar alta";
+                solicitudesAdministradores.tipo_solicitud="Publicar";
                 solicitudesAdministradores.fecha_solicitud=administradorInmueble.fecha_solicitud;
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
@@ -750,7 +648,7 @@ const resolvers={
                 let bitacoraInmueble=await BitacoraInmueble();
                 bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
                 bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Se modificó el precio del inmueble de "+inmueble.precio+" a "+precio;
+                bitacoraInmueble.actividad="Se actualizó el precio del inmueble de "+inmueble.precio+" a "+precio;
                 bitacoraInmueble.fecha=fecha;
                 await bitacoraInmueble.save();
                 inmueble.precio=precio;
@@ -885,7 +783,7 @@ const resolvers={
             return "Inmueble eliminado";
         },
         registrarInmuebleFavorito: async (_,{id_inmueble,id_usuario,input1}) => {
-            
+            console.log(id_usuario);
             try{
                 let inmuebleFavorito=await InmuebleFavorito.findOne({"inmueble":id_inmueble,"usuario":id_usuario});
                 let usuarioInmuebleBase=await UsuarioInmuebleBase.findOne({"usuario":id_usuario});
@@ -1146,13 +1044,18 @@ const resolvers={
             
             var fecha=new Date();
             if(input.tipo_solicitud=="Dar alta"){
+                console.log(id);
+                console.log(administradorInmueble);
+                console.log(id_respondedor);
                 if(administradorInmueble.usuario_respondedor==null){
+                    console.log(id_respondedor);
                     administradorInmueble.usuario_respondedor=id_respondedor;
                     
                 }else{
                     throw new Error('El inmueble está a cargo de otro administrador');
                 }
             }
+            
 
             let solicitudesAdministradores=await SolicitudesAdministradores.findOne({_id:id_solicitud});
             solicitudesAdministradores.fecha_respuesta=fecha;
@@ -1337,7 +1240,7 @@ const resolvers={
                             multi:true,
                             upsert:false
                         }
-                        console.log(filter.usuario_solicitante);
+                        //console.log(filter.usuario_solicitante);
                         await SolicitudesUsuarios.updateMany(filter,update,options);
                     }else{
                         inmueble.estado_negociacion="Negociaciones avanzadas";
@@ -1374,7 +1277,7 @@ const resolvers={
                         filter.inmueble=inmueble.id;
                         filter.solicitud_enviada=false;
                         filter.usuario_solicitante=solicitudesAdministradores.usuario_solicitante;
-                        console.log(filter.usuario_solicitante);
+                        //console.log(filter.usuario_solicitante);
                         filter.tipo_solicitud="Calificar";
                         let update={
                             $set:{
@@ -1419,8 +1322,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=4;
-            var max=4;
+            var min=54;
+            var max=54;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1481,14 +1384,15 @@ const resolvers={
             let zona=["Zona 3"];
             //let tipo_inmueble=["Casa","Departamento","Terreno"];
             let tipo_inmueble=["Casa"];
-            let tipo_contrato=["Venta","Alquiler","Anticrético"];
-            //let tipo_contrato=["Venta",];
+            //let tipo_contrato=["Venta","Alquiler","Anticrético"];
+            let tipo_contrato=["Venta",];
             let imagenes_2D=["","www.linkimagenes"];
             let video_2D=["","www.linkvideo"];
             let tour_virtual=["","www.linktourvirtual"];
             let video_tour=["","www.linkvideotour"];
             let valores_booleanos=[true,false];
-            let categorias=["Orgánicos","Pro","Pro360"];
+            let categorias=["Gratuito","Pro","Pro360"];
+            let modificacionesPermitidas=[0,1,3];
             const cantidad_inmuebles=Math.floor(Math.random() * (max - min)) + min;
             //const cantidad_inmuebles=600;
             var i=0;
@@ -1526,9 +1430,11 @@ const resolvers={
                     if(valores_booleanos[numero_aleatorio]){
                         numero_aleatorio=Math.floor(Math.random() * (500  - 0)) + 10;
                         inmueble.historial_precios.push(inmueble.precio+numero_aleatorio);
+                        inmueble.precio=inmueble.precio+numero_aleatorio;
                     }else{
                         numero_aleatorio=Math.floor(Math.random() * (500  - 0)) + 10;
                         inmueble.historial_precios.push(inmueble.precio-numero_aleatorio);
+                        inmueble.precio=inmueble.precio+numero_aleatorio;
                     }
                 }
                 numero_aleatorio=Math.floor(Math.random() * (estado_negociacion.length  - 0)) + 0;
@@ -1693,10 +1599,10 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                inmueble.autorizacion="Pendiente";
+                inmueble.autorizacion="Activo";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
-                
+                inmueble.modificaciones_permitidas=modificacionesPermitidas[numero_aleatorio];
                 
                 const inmuebleImagenes=InmuebleImagenes();
                 let imagenes=[];
@@ -1895,6 +1801,8 @@ const resolvers={
                 if(valores_booleanos[numero_aleatorio]){
                     const inmuebleComprobante=InmuebleComprobante();
                     inmuebleComprobante.link_imagen_deposito=link_comprobante;
+                    inmuebleComprobante.link_imagen_documento_propiedad=link_comprobante;
+                    inmuebleComprobante.link_imagen_dni_propietario=link_comprobante;
                     numero_aleatorio=Math.floor(Math.random() * (nombres.length  - 0)) + 0;
                     inmuebleComprobante.nombre_depositante=nombres[numero_aleatorio];
                     inmuebleComprobante.medio_pago="Depósito";
@@ -1978,6 +1886,26 @@ const resolvers={
             await cuentasBanco.save();
             return cuentasBanco;
         },
+        modificarCuentaBanco: async (_,{id,input})=>{
+            let cuentasBanco=await CuentasBanco.findById(id);
+
+            if(!cuentasBanco){
+                throw new Error('Cuenta de banco no encontrado');
+            }
+            await CuentasBanco.findOneAndUpdate({_id: id},input);
+            return "Se guardaron los cambios";
+        },
+        eliminarCuentaBanco: async(_,{id})=>{
+            let cuentasBanco=await CuentasBanco.findById(id);
+
+            if(!cuentasBanco){
+                throw new Error('Cuenta de banco no encontrado');
+            }
+            await CuentasBanco.findByIdAndDelete({_id: id});
+            return "Cuenta de banco eliminada";
+        },
+
+        
         registrarSolicitudAdministradorAgente: async(_,{input})=>{
             let administradorAgente=new AdministradorAgente(input);
             administradorAgente.save();

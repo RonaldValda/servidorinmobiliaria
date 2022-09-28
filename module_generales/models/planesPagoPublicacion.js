@@ -5,9 +5,17 @@ const PlanesPagoPublicacionSchema = new mongoose.Schema({
         type: String,
         default: ""
     },
+    tipo_plan: {
+        type: String,
+        default:"",
+    },
     costo:{
         type: Number,
         default:0
+    },
+    modificaciones_permitidas:{
+        type: Number,
+        defaut: 0
     },
     activo:{
         type: Boolean,
