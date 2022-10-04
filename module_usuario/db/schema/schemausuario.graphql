@@ -13,6 +13,7 @@
         obtenerUsuarioInmueblesBuscados(id:ID):[UsuarioInmuebleBuscado]
         obtenerNotificacionesAccionesVendedor(id_inmueble:ID):NotificacionesAccionesVendedor
         obtenerAgentesCiudad(ciudad:String):[Usuario]
+        obtenerSolicitudesAdministradoresUsuario(id:ID):[SolicitudesAdministradores]
   }
     type NotificacionesAccionesVendedor{
         inmueble_queja:[InmuebleQueja]
@@ -98,8 +99,7 @@
         id:ID
         administrador_inmueble:AdministradorInmueble
         usuario_solicitante:Usuario
-        inmueble_dar_baja:InmuebleDarBaja
-        inmueble_vendido:InmuebleVendido
+        comprobante:InmuebleComprobante
         fecha_solicitud:Date
         fecha_respuesta:Date
         respuesta_entregada:Boolean
@@ -482,5 +482,7 @@
         modificarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):String
         modificarUsuarioInmuebleBuscadoPersonales(id:ID,nombre_configuracion:String,numero_telefono:String):String
         registrarSolicitudInscripcionAgente(id_usuario_solicitante:ID,agencia:String,web:String,ciudad:String,link_respaldo_solicitud:String):InscripcionAgente
+        marcarLeidoSolicitudAdministradorUsuario(id:ID):String
         registrarUsuariosMasivo:String
+        
     }

@@ -1,14 +1,15 @@
 const mongoose = require('mongoose');
 
 const InmuebleComprobanteSchema = new mongoose.Schema({
+    tipo_comprobante:{
+        type: String,
+        default: "Publicar"
+    },
     medio_pago:{
         type:String
     },
     monto_pago:{
         type:Number,
-    },
-    nombre_plan:{
-        type: String
     },
     numero_transaccion:{
         type:String
@@ -34,6 +35,27 @@ const InmuebleComprobanteSchema = new mongoose.Schema({
     },
     link_imagen_dni_agente:{
         type:String
+    },
+    limite_contrato:{
+        type:Boolean
+    },
+    cancelacion_contrato:{
+        type:Boolean
+    },
+    numero_testimonio:{
+        type:String
+    },
+    solicitud: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SolicitudesAdministradores'
+    },
+    plan: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PlanesPagoPublicacion'
+    },
+    usuario_comprador: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Usuario'
     },
     inmueble: {
         type: mongoose.Schema.Types.ObjectId,

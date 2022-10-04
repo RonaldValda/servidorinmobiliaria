@@ -1,7 +1,7 @@
 extend type Query{
     obtenerCuentasBancos:[CuentaBanco]
     obtenerMembresiaPlanesPago:[MembresiaPlanesPago]
-    obtenerPlanesPagoPublicacion:[PlanesPagoPublicacion]
+    obtenerPlanesPagoPublicacion(tipo_plan:String):[PlanesPagoPublicacion]
     obtenerVersionesAPP:VersionesAPP
     obtener:[RegistroAds]
     obtenerNotificacionesSuperUsuario(id:ID):NotificacionesSuperUsuario

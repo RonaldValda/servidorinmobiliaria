@@ -13,8 +13,12 @@ const resolversSuperUsuario={
         obtenerMembresiaPlanesPago: async(_,{})=>{
             return await MembresiaPlanesPago.find();
         },
-        obtenerPlanesPagoPublicacion: async(_,{})=>{
-            return await PlanesPagoPublicacion.find();
+        obtenerPlanesPagoPublicacion: async(_,{tipo_plan})=>{
+            var filter={};
+            if(tipo_plan!=""){
+                filter.tipo_plan=tipo_plan;
+            }
+            return await PlanesPagoPublicacion.find(filter);
         },
         obtenerMembresiaPagosSuperUsuario: async(_,{id})=>{
             var filter1={};

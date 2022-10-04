@@ -105,7 +105,6 @@ type Inmueble{
     creador:Usuario
     usuarios_favorito: [UsuarioFavorito]
     imagenes:InmuebleImagenes
-    comprobante:InmuebleComprobante
     cantidad_vistos:Int
     cantidad_doble_vistos:Int
     cantidad_favoritos:Int
@@ -119,9 +118,9 @@ type InmuebleNota{
 }
 type InmuebleComprobante{
     id:ID
+    tipo_comprobante:String
     medio_pago:String
     monto_pago:Int
-    nombre_plan:String
     numero_transaccion:String
     cuenta_banco:CuentaBanco
     nombre_depositante:String
@@ -130,11 +129,16 @@ type InmuebleComprobante{
     link_imagen_documento_venta:String
     link_imagen_dni_propietario:String
     link_imagen_dni_agente:String
+    limite_contrato:Boolean
+    cancelacion_contrato:Boolean
+    numero_testimonio:String
+    usuario_comprador:Usuario
+    plan:PlanesPagoPublicacion
 }
 input InmuebleComprobanteInput{
+    tipo_comprobante:String
     medio_pago:String
     monto_pago:Int
-    nombre_plan:String
     numero_transaccion:String
     cuenta_banco:String
     nombre_depositante:String
@@ -143,6 +147,11 @@ input InmuebleComprobanteInput{
     link_imagen_documento_venta:String
     link_imagen_dni_propietario:String
     link_imagen_dni_agente:String
+    limite_contrato:Boolean
+    cancelacion_contrato:Boolean
+    numero_testimonio:String
+    usuario_comprador:String
+    plan:String
 }
 type InmuebleImagenes{
     id:ID
@@ -223,12 +232,14 @@ input ObtenerInmuebleNuevoInput{
     precio_max: Int
 }
 input InmuebleInput{
+    autorizacion: String
     ciudad: String
     direccion: String
     precio: Int
     historial_precios: [Int]
     tipo_inmueble: String
     tipo_contrato: String
+    categoria: String
     estado_negociacion:String
     zona: String
     coordenadas: [Float]
@@ -456,8 +467,8 @@ input FiltroSimpleInmuebleInput{
 
 type Mutation {
     registrarInmueble(id_creador: ID!,id_propietario: ID!, input1: InmuebleInput,input2: InmuebleImagenesInput,input3: InmuebleComprobanteInput) : Inmueble
-    actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput) : String
-    actualizarPrecioInmueble(id: ID!, precio: Int) : String
+    actualizarInmueble(id: ID!, input1: InmuebleInput, input2: InmuebleImagenesInput, input3: InmuebleComprobanteInput) : String
+    actualizarPrecioInmueble(id: ID!,modificaciones_permitidas:Int, precio: Int, input3: InmuebleComprobanteInput) : String
     eliminarInmueble(id: ID!) : String
     registrarInmuebleMasivo(id_creador: ID!,id_propietario: ID!): String
     registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input1: InmuebleFavoritoInput): String
@@ -467,6 +478,7 @@ type Mutation {
     responderInmuebleQueja(id_solicitud:ID,input:InmuebleQuejaInput):InmuebleQueja
     guardarInmuebleNota(id_inmueble:ID,id_usuario:ID,nota:String):InmuebleNota
     eliminarInmueblesTodos:String
+    solicitudComprobante(id:ID):String
 }
 type Subscription {
     inmuebleAdded: Inmueble

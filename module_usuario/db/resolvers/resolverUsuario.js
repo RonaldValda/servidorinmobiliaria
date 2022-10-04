@@ -53,8 +53,18 @@ const resolversUsuario={
             filter={};
             filter.administrador_inmueble=administradorInmueble.id;
             resultado.solicitudes_administradores=await SolicitudesAdministradores.find(filter)
-                                        .populate({path:"inmueble_vendido",populate:{path:"usuario_comprador"}})
-                                        .populate({path:"inmueble_dar_baja"});
+            .populate({
+                path:"comprobante",
+                populate:({path:"usuario_comprador"})
+            })
+            .populate({
+                path:"comprobante",
+                populate:({path:"cuenta_banco"})
+            })
+            .populate({
+                path:"comprobante",
+                populate:({path:"plan"})
+            });
             resultado.administrador_inmueble=administradorInmueble;
             return resultado;
         },
@@ -415,6 +425,10 @@ const resolversUsuario={
             await inscripcionAgente.save();
             await usuario.save();
             return inscripcionAgente;
+        },
+        marcarLeidoSolicitudAdministradorUsuario: async(_,{id})=>{
+            await SolicitudesAdministradores.findByIdAndUpdate(id,{respuesta_entregada:true});
+            return "Se guardaron los cambios";
         },
         registrarUsuariosMasivo: async(_,{})=>{
             var cantidad=50;

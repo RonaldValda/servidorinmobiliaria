@@ -259,10 +259,6 @@ const InmuebleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'InmuebleImagenes'
     },
-    comprobante: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'InmuebleComprobante'
-    },
     propietario:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'
@@ -291,8 +287,7 @@ const InmuebleSchema = new mongoose.Schema({
         default: Date.now()
     },
     fecha_publicacion:{
-        type: Date,
-        default: Date.now()
+        type: Date
     },
     autorizacion:{
         type: String,
@@ -316,7 +311,7 @@ const InmuebleSchema = new mongoose.Schema({
     },
     categoria:{
         type: String,
-        default: "Orgánico"
+        default: "Gratuito"
     }
 });
 module.exports = mongoose.model('Inmueble', InmuebleSchema);
