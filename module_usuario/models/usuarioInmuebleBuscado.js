@@ -285,10 +285,6 @@ const UsuarioInmuebleBuscadoSchema = new mongoose.Schema({
         type: Boolean,
         default:false
     },
-    imagenes_2D:{
-        type: Boolean,
-        default:false
-    },
     video_2D:{
         type: Boolean,
         default:false

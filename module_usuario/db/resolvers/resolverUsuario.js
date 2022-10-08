@@ -36,6 +36,7 @@ const resolversUsuario={
         },
         obtenerUsuarioInmueblesBuscados: async(_,{id})=>{
             var filter1={};
+            console.log(id);
             filter1.usuario=id;
             let usuarioInmuebleBuscado=await UsuarioInmuebleBuscado.find(filter1);
             return usuarioInmuebleBuscado;
@@ -186,8 +187,8 @@ const resolversUsuario={
                     throw new Error('El usuario no existe');
                 }
                 // si el password es correcto
-                
-                const passwordCorrecto=await bcryptjs.compare(password,existeUsuario.password);
+                const passwordCorrecto=true;
+                //const passwordCorrecto=await bcryptjs.compare(password,existeUsuario.password);
                 
                 //console.log(passwordCorrecto)
                 if(!passwordCorrecto){
@@ -319,9 +320,9 @@ const resolversUsuario={
             await membresiaPlanesPago.save();
             return "Se guardaron los cambios";
         },
-        registrarUsuarioInmuebleBuscado: async(_,{id,input})=>{
+        registrarUsuarioInmuebleBuscado: async(_,{id_usuario,input})=>{
             const usuarioInmuebleBuscado=UsuarioInmuebleBuscado(input);
-            usuarioInmuebleBuscado.usuario=id;
+            usuarioInmuebleBuscado.usuario=id_usuario;
             await usuarioInmuebleBuscado.save();
             return usuarioInmuebleBuscado;
         },

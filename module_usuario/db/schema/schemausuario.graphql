@@ -370,7 +370,6 @@
         puesto_salud:Boolean
         zona_comercial:Boolean
         remates_judiciales:Boolean
-        imagenes_2D:Boolean
         video_2D:Boolean
         tour_virtual_360:Boolean
         video_tour_360:Boolean
@@ -448,7 +447,6 @@
         puesto_salud:Boolean
         zona_comercial:Boolean
         remates_judiciales:Boolean
-        imagenes_2D:Boolean
         video_2D:Boolean
         tour_virtual_360:Boolean
         video_tour_360:Boolean
@@ -469,7 +467,7 @@
         modificarUsuario(input: UsuarioInput):String
         autenticarUsuario(input: UsuarioInput) : Usuario
         responderSolicitudUsuarioCalificacion(id_solicitud:ID,calificacion:Int):String
-        modificarEstadoInmuebleVendedor(id_inmueble:ID,tipo_accion:String,input_dar_baja:InmuebleDarBajaInput,input_vendido:InmuebleVendidoInput):String
+        modificarEstadoInmuebleVendedor(id_inmueble:ID,tipo_accion:String,input:InmuebleComprobanteInput):String
         registrarMembresiaPago(input: MembresiaPagoInput) : MembresiaPago
         registrarSolicitudAdministradorAgente(input:AdministradorAgenteInput) : String
         registrarPlanesPagoAgente(input:PlanesPagoAgenteInput) : String
@@ -478,7 +476,7 @@
         buscarUsuarioEmail(email:String) : Usuario
         actualizarInmuebleBase(id_usuario:ID,input_visto:UsuarioInmuebleBaseInput,input_doble_visto:UsuarioInmuebleBaseInput,input_favorito:UsuarioInmuebleBaseInput): String
         
-        registrarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):UsuarioInmuebleBuscado
+        registrarUsuarioInmuebleBuscado(id_usuario:ID,input:UsuarioInmuebleBuscadoInput):UsuarioInmuebleBuscado
         modificarUsuarioInmuebleBuscado(id:ID,input:UsuarioInmuebleBuscadoInput):String
         modificarUsuarioInmuebleBuscadoPersonales(id:ID,nombre_configuracion:String,numero_telefono:String):String
         registrarSolicitudInscripcionAgente(id_usuario_solicitante:ID,agencia:String,web:String,ciudad:String,link_respaldo_solicitud:String):InscripcionAgente

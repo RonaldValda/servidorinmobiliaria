@@ -11,7 +11,6 @@ const SecuenciasIndices = require('../models/secuenciasIndices');
 const SolicitudesUsuarios=require('../models/solicitudesUsuarios');
 const SolicitudesAdministradores=require('../models/solicitudesAdministradores');
 const AdministradorImmueble=require('../models/administradorInmueble');
-const BitacoraInmueble=require('../models/bitacoraInmueble');
 const CuentasBanco=require('../models/cuentasBanco');
 const AdministradorAgente=require('../models/administradorAgente');
 const Zona=require('../module_generales/models/zona');
@@ -100,6 +99,17 @@ const resolvers={
             //if(input1.tipo_contrato!="Todos") filter1.tipo_contrato={$in:input1.tipo_contrato};
             filter1.autorizacion={$in:"Activo"};
             const inmuebles=Inmueble.find(filter1);
+            /*filter1={
+                $or:[
+                    {
+                        categoria:{$in:"Gratuito"},ultima_modificacion:{ $gt: new Date('2022-10-05') }
+                    },
+                    {
+                        categoria:{$nin:"Gratuito"}
+                    }
+                ]
+            };
+            await inmuebles.find(filter1);*/
             let filter2={};
             //console.log("id_usuario",input1.id_usuario);
             filter2.usuario={$in:""};
@@ -614,13 +624,6 @@ const resolvers={
                 inmuebleComprobante.link_imagen_dni_agente=input3.link_imagen_dni_agente;
                 inmuebleComprobante.inmueble=nuevoInmueble.id;
                 await inmuebleComprobante.save();
-                //}
-                //Se registra en la bitacora el envio de la solicitud para dar de alta el inmueble creado
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=id_creador;
-                bitacoraInmueble.inmueble=nuevoInmueble.id;
-                bitacoraInmueble.actividad="Envío de solicitud para publicar el inmueble";
-                await bitacoraInmueble.save();
                 //Se crea un registro para el que administrá el inmueble
                 let administradorInmueble=await AdministradorImmueble();
                 administradorInmueble.tipo_solicitud="Publicar";
@@ -660,7 +663,6 @@ const resolvers={
             }
         },
         actualizarPrecioInmueble: async(_,{id,precio,input3})=>{
-            let modificar=true;
             let inmueble=await Inmueble.findById(id);
             if(!inmueble){
                 throw new Error('Inmueble no encontrada');
@@ -896,15 +898,15 @@ const resolvers={
            console.log(ff);
             return fec.toISOString();
         },
-        modificarEstadoInmuebleVendedor: async (_,{id_inmueble,tipo_accion,input_dar_baja,input_vendido})=>{
+        modificarEstadoInmuebleVendedor: async (_,{id_inmueble,tipo_accion,input})=>{
+            console.log(id_inmueble);
             let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
             let usuario=await Usuario.findById(administradorInmueble.usuario_solicitante);
             
             let inmueble=await Inmueble.findById(id_inmueble);
             var fecha=new Date();
             if(tipo_accion=="Dar alta"){
-                inmueble.autorizacion="Pendiente";
-                inmueble.ultima_modificacion=fecha;
+                inmueble.autorizacion="Pendiente - Dar alta";
                 await inmueble.save();
                 let solicitudesAdministradores=SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
@@ -922,13 +924,6 @@ const resolvers={
                 administradorInmueble.solicitud_terminada=false;
                 administradorInmueble.respuesta_entregada=false;
                 await administradorInmueble.save();
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
-                bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Se envió solicitud para dar de alta el inmueble";
-                bitacoraInmueble.fecha=fecha;
-                await bitacoraInmueble.save();
-                return bitacoraInmueble.actividad;
             }else if(tipo_accion=="Dar baja"){
                 inmueble.autorizacion="Inactivo";
                 inmueble.ultima_modificacion=fecha;
@@ -937,23 +932,15 @@ const resolvers={
                 usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+1;
                 usuario.cantidad_calificados=usuario.cantidad_calificados+1;
                 await usuario.save();
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
-                bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Se dió de baja el inmueble";
-                bitacoraInmueble.fecha=fecha;
-                await bitacoraInmueble.save();
-                return bitacoraInmueble.actividad;
             }else if(tipo_accion=="Dar baja y reportar"){
-                inmueble.autorizacion="Pendiente";
-                inmueble.ultima_modificacion=fecha;
+                inmueble.autorizacion="Pendiente - Dar baja";
                 await inmueble.save();
-                let inmuebleDarBaja=InmuebleDarBaja();
-                inmuebleDarBaja.limite_contrato=input_dar_baja.limite_contrato;
-                inmuebleDarBaja.cancelacion_contrato=input_dar_baja.cancelacion_contrato;
-                inmuebleDarBaja.imagen_documento_propiedad=input_dar_baja.imagen_documento_propiedad;
-                inmuebleDarBaja.inmueble=inmueble.id;
-                await inmuebleDarBaja.save();
+                let inmuebleComprobante=InmuebleComprobante();
+                inmuebleComprobante.tipo_comprobante="Dar baja";
+                inmuebleComprobante.limite_contrato=input.limite_contrato;
+                inmuebleComprobante.cancelacion_contrato=input.cancelacion_contrato;
+                inmuebleComprobante.link_imagen_documento_propiedad=input.link_imagen_documento_propiedad;
+                inmuebleComprobante.inmueble=inmueble.id;
                 let solicitudesAdministradores=SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
                 solicitudesAdministradores.tipo_solicitud="Dar baja";
@@ -961,7 +948,9 @@ const resolvers={
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
                 solicitudesAdministradores.link_respaldo="";
-                solicitudesAdministradores.inmueble_dar_baja=inmuebleDarBaja.id;
+                solicitudesAdministradores.comprobante=inmuebleComprobante.id;
+                inmuebleComprobante.solicitud=solicitudesAdministradores.id;
+                await inmuebleComprobante.save();
                 await solicitudesAdministradores.save();
                 administradorInmueble.tipo_solicitud="Dar baja";
                 administradorInmueble.fecha_solicitud=fecha;
@@ -971,39 +960,23 @@ const resolvers={
                 administradorInmueble.solicitud_terminada=false;
                 administradorInmueble.respuesta_entregada=false;
                 await administradorInmueble.save();
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
-                bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Se envió solicitud para dar de baja el inmueble";
-                bitacoraInmueble.fecha=fecha;
-                await bitacoraInmueble.save();
-                return bitacoraInmueble.actividad;
             }else if(tipo_accion=="Vendido"){
-                inmueble.ultima_modificacion=fecha;
-                inmueble.calificacion=3;
-                await inmueble.save();
-                usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+3;
-                usuario.cantidad_calificados=usuario.cantidad_calificados+1;
-                await usuario.save();
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
-                bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Se declaró vendido al inmueble";
-                bitacoraInmueble.fecha=fecha;
-                await bitacoraInmueble.save();
-                return bitacoraInmueble.actividad;
-            }else if(tipo_accion=="Vendido y reportar"){
-                //inmueble.autorizacion="Pendiente";
-                
                 inmueble.estado_negociacion="Vendido";
                 inmueble.ultima_modificacion=fecha;
+                inmueble.calificacion=1;
                 await inmueble.save();
-                let inmuebleVendido=InmuebleVendido();
-                inmuebleVendido.usuario_comprador=input_vendido.usuario_comprador;
-                inmuebleVendido.numero_testimonio=input_vendido.numero_testimonio;
-                inmuebleVendido.inmueble=inmueble.id;
-                await inmuebleVendido.save();
-                console.log("aqui");
+                usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+1;
+                usuario.cantidad_calificados=usuario.cantidad_calificados+1;
+                await usuario.save();
+            }else if(tipo_accion=="Vendido y reportar"){
+                inmueble.estado_negociacion="Pendiente - Vendido";
+                inmueble.ultima_modificacion=fecha;
+                await inmueble.save();
+                let inmuebleComprobante=InmuebleComprobante();
+                inmuebleComprobante.tipo_comprobante="Vendido";
+                inmuebleComprobante.usuario_comprador=input.usuario_comprador;
+                inmuebleComprobante.numero_testimonio=input.numero_testimonio;
+                inmuebleComprobante.inmueble=inmueble.id;
                 let solicitudesAdministradores=SolicitudesAdministradores();
                 solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
                 solicitudesAdministradores.tipo_solicitud="Vendido";
@@ -1011,7 +984,9 @@ const resolvers={
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
                 solicitudesAdministradores.link_respaldo="";
-                solicitudesAdministradores.inmueble_vendido=inmuebleVendido.id;
+                solicitudesAdministradores.comprobante=inmuebleComprobante.id;
+                inmuebleComprobante.solicitud=solicitudesAdministradores.id;
+                await inmuebleComprobante.save();
                 await solicitudesAdministradores.save();
                 administradorInmueble.tipo_solicitud="Vendido";
                 administradorInmueble.fecha_solicitud=fecha;
@@ -1021,14 +996,8 @@ const resolvers={
                 administradorInmueble.solicitud_terminada=false;
                 administradorInmueble.respuesta_entregada=false;
                 await administradorInmueble.save();
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=administradorInmueble.usuario_solicitante;
-                bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Se envió solicitud para declarar vendido el inmueble";
-                bitacoraInmueble.fecha=fecha;
-                await bitacoraInmueble.save();
-                return bitacoraInmueble.actividad;
             }
+            return "Correcto";
         },
         reportarInmueble: async(_,{id_inmueble,id_solicitante,input})=>{      
             let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
@@ -1303,17 +1272,11 @@ const resolvers={
             usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+calificacion;
             usuario.cantidad_calificados=usuario.cantidad_calificados+1;
             await usuario.save();
-            let bitacoraInmueble=await BitacoraInmueble();
-            bitacoraInmueble.usuario=solicitudesUsuarios.usuario_respondedor;
-            bitacoraInmueble.inmueble=inmueble.id;
-            bitacoraInmueble.actividad="Se envió la calificacion de "+calificacion;
-            bitacoraInmueble.fecha=fecha;
-            await bitacoraInmueble.save();
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=5;
-            var max=5;
+            var min=55;
+            var max=55;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1372,10 +1335,10 @@ const resolvers={
             //let ciudades=["La Paz","Oruro","Potosí","Cochabamba","Tarija","Sucre","Santa Cruz","Trinidad"];
             //let ciudades=["Sucre"];
             let zona=["Zona 3"];
-            //let tipo_inmueble=["Casa","Departamento","Terreno"];
-            let tipo_inmueble=["Casa"];
-            //let tipo_contrato=["Venta","Alquiler","Anticrético"];
-            let tipo_contrato=["Venta",];
+            let tipo_inmueble=["Casa","Departamento","Terreno"];
+            //let tipo_inmueble=["Casa"];
+            let tipo_contrato=["Venta","Alquiler","Anticrético"];
+            //let tipo_contrato=["Venta",];
             let imagenes_2D=["","www.linkimagenes"];
             let video_2D=["","www.linkvideo"];
             let tour_virtual=["","www.linktourvirtual"];
@@ -1589,8 +1552,8 @@ const resolvers={
                 }else{
                     inmueble.ultima_modificacion=fecha;
                 }
-                //inmueble.autorizacion="Activo";
-                inmueble.autorizacion="Pendiente - Publicar";
+                inmueble.autorizacion="Activo";
+                //inmueble.autorizacion="Pendiente - Publicar";
                 numero_aleatorio=Math.floor(Math.random() * (categorias.length  - 0)) + 0;
                 inmueble.categoria=categorias[numero_aleatorio];
                 inmueble.modificaciones_permitidas=0;
@@ -1798,11 +1761,6 @@ const resolvers={
                 //console.log(inmuebleComunidad);
                 //console.log(inmuebleOtros);
                 secuencia.indice_inmuebles=secuencia.indice_inmuebles+1;
-                let bitacoraInmueble=await BitacoraInmueble();
-                bitacoraInmueble.usuario=id_creador;
-                bitacoraInmueble.inmueble=inmueble.id;
-                bitacoraInmueble.actividad="Envío de solicitud para dar de alta el inmueble creado";
-                await bitacoraInmueble.save();
                 let administradorInmueble=await AdministradorImmueble();
                 administradorInmueble.tipo_solicitud="Publicar";
                 administradorInmueble.respuesta="";
@@ -1869,7 +1827,7 @@ const resolvers={
                 await solicitudesAdministradores1.save();
         */
                 await secuencia.save();
-                //inmueble.fecha_publicacion=new Date();
+                inmueble.fecha_publicacion=new Date();
                 await inmueble.save();
                 await inmuebleImagenes.save();
                // pubsub.publish(INMUEBLE_ADDED,{inmuebleAdded: inmueble});
