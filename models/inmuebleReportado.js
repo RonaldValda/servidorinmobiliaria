@@ -33,6 +33,10 @@ const InmuebleReportadoSchema = new mongoose.Schema({
         type: Date,
         default: Date.now()
     },
+    solicitud_terminada:{
+        type:Boolean,
+        default:false
+    },
     respuesta_entregada:{
         type:Boolean,
         default:false

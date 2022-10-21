@@ -515,6 +515,8 @@ const resolvers={
         await AdministradorImmueble.remove();
         await SolicitudesAdministradores.remove();
         await InmuebleComprobante.remove();
+        await InmuebleReportado.remove();
+        await InmuebleQueja.remove();
         return "Eliminado";
        },
         RegistrarAd: async (_,{id_ad,tipo_ad})=>{
@@ -932,6 +934,24 @@ const resolvers={
                 usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+1;
                 usuario.cantidad_calificados=usuario.cantidad_calificados+1;
                 await usuario.save();
+                let solicitudesAdministradores=SolicitudesAdministradores();
+                solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
+                solicitudesAdministradores.tipo_solicitud="Dar baja";
+                solicitudesAdministradores.fecha_solicitud=fecha;
+                solicitudesAdministradores.fecha_respuesta=fecha;
+                solicitudesAdministradores.respuesta="Confirmado";
+                solicitudesAdministradores.observaciones="";
+                solicitudesAdministradores.solicitud_terminada=true;
+                solicitudesAdministradores.respuesta_entregada=false;
+                await solicitudesAdministradores.save();
+                administradorInmueble.tipo_solicitud="Dar baja";
+                administradorInmueble.fecha_solicitud=fecha;
+                administradorInmueble.fecha_respuesta=fecha;
+                administradorInmueble.respuesta="Confirmado";
+                administradorInmueble.observaciones="";
+                administradorInmueble.solicitud_terminada=true;
+                administradorInmueble.respuesta_entregada=false;
+                await administradorInmueble.save();
             }else if(tipo_accion=="Dar baja y reportar"){
                 inmueble.autorizacion="Pendiente - Dar baja";
                 await inmueble.save();
@@ -947,7 +967,6 @@ const resolvers={
                 solicitudesAdministradores.fecha_solicitud=fecha;
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
-                solicitudesAdministradores.link_respaldo="";
                 solicitudesAdministradores.comprobante=inmuebleComprobante.id;
                 inmuebleComprobante.solicitud=solicitudesAdministradores.id;
                 await inmuebleComprobante.save();
@@ -956,7 +975,6 @@ const resolvers={
                 administradorInmueble.fecha_solicitud=fecha;
                 administradorInmueble.respuesta="";
                 administradorInmueble.observaciones="";
-                administradorInmueble.link_respaldo="";
                 administradorInmueble.solicitud_terminada=false;
                 administradorInmueble.respuesta_entregada=false;
                 await administradorInmueble.save();
@@ -968,8 +986,26 @@ const resolvers={
                 usuario.sumatoria_calificacion=usuario.sumatoria_calificacion+1;
                 usuario.cantidad_calificados=usuario.cantidad_calificados+1;
                 await usuario.save();
+                let solicitudesAdministradores=SolicitudesAdministradores();
+                solicitudesAdministradores.administrador_inmueble=administradorInmueble.id;
+                solicitudesAdministradores.tipo_solicitud="Vendido";
+                solicitudesAdministradores.fecha_solicitud=fecha;
+                solicitudesAdministradores.fecha_respuesta=fecha;
+                solicitudesAdministradores.respuesta="Confirmado";
+                solicitudesAdministradores.observaciones="";
+                solicitudesAdministradores.solicitud_terminada=false;
+                solicitudesAdministradores.respuesta_entregada=false;
+                await solicitudesAdministradores.save();
+                administradorInmueble.tipo_solicitud="Vendido";
+                administradorInmueble.fecha_solicitud=fecha;
+                administradorInmueble.fecha_respuesta=fecha;
+                administradorInmueble.respuesta="Confirmado";
+                administradorInmueble.observaciones="";
+                administradorInmueble.solicitud_terminada=false;
+                administradorInmueble.respuesta_entregada=false;
+                await administradorInmueble.save();
             }else if(tipo_accion=="Vendido y reportar"){
-                inmueble.estado_negociacion="Pendiente - Vendido";
+                inmueble.autorizacion="Pendiente - Vendido";
                 inmueble.ultima_modificacion=fecha;
                 await inmueble.save();
                 let inmuebleComprobante=InmuebleComprobante();
@@ -983,7 +1019,6 @@ const resolvers={
                 solicitudesAdministradores.fecha_solicitud=fecha;
                 solicitudesAdministradores.respuesta="";
                 solicitudesAdministradores.observaciones="";
-                solicitudesAdministradores.link_respaldo="";
                 solicitudesAdministradores.comprobante=inmuebleComprobante.id;
                 inmuebleComprobante.solicitud=solicitudesAdministradores.id;
                 await inmuebleComprobante.save();
@@ -992,7 +1027,6 @@ const resolvers={
                 administradorInmueble.fecha_solicitud=fecha;
                 administradorInmueble.respuesta="";
                 administradorInmueble.observaciones="";
-                administradorInmueble.link_respaldo="";
                 administradorInmueble.solicitud_terminada=false;
                 administradorInmueble.respuesta_entregada=false;
                 await administradorInmueble.save();
@@ -1076,7 +1110,10 @@ const resolvers={
                         inmueble.autorizacion="Bloqueado";
                         await inmueble.save();
                     }else if(input.respuesta=="Confirmado"){
-                        inmueble.autorizacion="Pendiente - Publicar";
+                        inmueble.estado_negociacion="Sin negociar";
+                        inmueble.fecha_publicacion=fecha;
+                        inmueble.ultima_modificacion=fecha;
+                        inmueble.autorizacion="Activo";
                         await inmueble.save();
                     }
                 }else if(input.tipo_solicitud=="Dar alta"){
@@ -1084,7 +1121,8 @@ const resolvers={
                         inmueble.autorizacion="Inactivo";
                         await inmueble.save();
                     }else if(input.respuesta=="Confirmado"){
-                        inmueble.autorizacion="Pendiente - Dar alta";
+                        inmueble.ultima_modificacion=fecha;
+                        inmueble.autorizacion="Activo";
                         await inmueble.save();
                     }
                 }else if(input.tipo_solicitud=="Dar baja"){
@@ -1092,7 +1130,8 @@ const resolvers={
                         inmueble.autorizacion="Activo";
                         await inmueble.save();
                     }else if(input.respuesta=="Confirmado"){
-                        inmueble.autorizacion="Pendiente - Dar baja";
+                        inmueble.autorizacion="Inactivo";
+                        inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                     }
                 }else if(input.tipo_solicitud=="Actualizar"){
@@ -1103,12 +1142,16 @@ const resolvers={
                         inmueble.autorizacion="Bloqueado";
                         await inmueble.save();
                     }else if(input.respuesta=="Confirmado"){
-                        inmueble.autorizacion="Pendiente - Actualizar";
+                        inmueble.autorizacion="Activo";
+                        inmueble.contador_modificacion=inmueble.contador_modificacion+1;
+                        inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                     }
                 }else if(input.tipo_solicitud=="Bajar precio"){
                     if(input.respuesta=="Confirmado"){
                         inmueble.autorizacion="Activo";
+                        inmueble.contador_modificacion=inmueble.contador_modificacion+1;
+                        inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                     }else if(input.respuesta=="Rechazado"){
                         inmueble.historial_precios.pop();
@@ -1120,9 +1163,12 @@ const resolvers={
                     if(input.respuesta=="Rechazado"){
                         inmueble.estado_negociacion="Negociaciones avanzadas";
                         inmueble.ultima_modificacion=fecha;
+                        inmueble.autorizacion="Activo";
                         await inmueble.save();
                     }else if(input.respuesta=="Confirmado"){
-                        inmueble.autorizacion="Pendiente - Declarar vendido";
+                        inmueble.autorizacion="Activo";
+                        inmueble.estado_negociacion="Vendido";
+                        inmueble.ultima_modificacion=fecha;
                         await inmueble.save();
                     }
                 }
@@ -1135,16 +1181,32 @@ const resolvers={
 
         solicitudComprobante: async (_,{id})=>{
             let comprobante=await InmuebleComprobante.findOne({solicitud:id});
-            let plan=null;
+            var filter={};
+            filter.administrador_inmueble="634dde414b85121e38ca8430";
+            await SolicitudesAdministradores
+            .updateMany(filter,{"$set":{"solicitud_terminada": true,"solicitud_terminada_super_usuario": true}});
+            /*let plan=null;
             //console.log(comprobante);
             if(comprobante){
                 console.log("hola");
                 plan=await PlanesPagoPublicacion.findOne({_id:comprobante.plan});
                 console.log(plan.nombre_plan);
-                /*if(input.respuesta="Confirmado"){
-                   // inmueble.modificaciones_permitidas=inmueble.modificaciones_permitidas+plan.modificaciones_permitidas;
-                }*/
-            }
+            }*/
+            return "ok";
+        },
+
+        cerrarOperacionesInmueble: async (_,{id_inmueble,inmueble_imagenes_input})=>{
+            await Inmueble.findOneAndUpdate({_id:id_inmueble},{autorizacion:"Inactivo"});
+            await InmuebleImagenes.findOneAndUpdate({inmueble:id_inmueble},inmueble_imagenes_input);
+            let administradorInmueble=await AdministradorImmueble.findOne({inmueble:id_inmueble});
+            await AdministradorImmueble
+            .findOneAndUpdate({_id:administradorInmueble.id},{solicitud_terminada:true,solicitud_terminada_super_usuario:true});
+            await SolicitudesAdministradores
+            .updateMany({administrador_inmueble:administradorInmueble.id},{"$set":{"solicitud_terminada": true,"solicitud_terminada_super_usuario": true}});
+            await InmuebleReportado
+            .updateMany({inmueble:id_inmueble},{"$set":{"solicitud_terminada": true}});
+            await InmuebleQueja
+            .updateMany({inmueble:id_inmueble},{"$set":{"solicitud_terminada": true}});
             return "ok";
         },
 
@@ -1152,7 +1214,6 @@ const resolvers={
             let administradorInmueble=await AdministradorImmueble.findOne({_id:id});
             
             var fecha=new Date();
-            console.log(input.tipo_solicitud);
             if(input.tipo_solicitud=="Publicar"){
                 if(administradorInmueble.super_usuario==null||administradorInmueble.super_usuario==id_super_usuario){
                     administradorInmueble.super_usuario=id_super_usuario;
@@ -1262,6 +1323,7 @@ const resolvers={
         responderSolicitudUsuarioCalificacion: async (_,{id_solicitud,calificacion})=>{
             var fecha=new Date();
             let solicitudesUsuarios=await SolicitudesUsuarios.findOne({_id:id_solicitud});
+            
             solicitudesUsuarios.fecha_respuesta=fecha;
             solicitudesUsuarios.solicitud_terminada=true;
             await solicitudesUsuarios.save();
@@ -1275,8 +1337,8 @@ const resolvers={
             return "Se registró la calificacion";
         },
         registrarInmuebleMasivo: async (_,{id_creador,id_propietario})=>{
-            var min=55;
-            var max=55;
+            var min=5;
+            var max=5;
             var longitud=-65.22562;
             var latitud=-18.98654;
             let link_comprobante="https://firebasestorage.googleapis.com/v0/b/bd-inmobiliaria-v01.appspot.com/o/images%2Fdata%2Fuser%2F0%2Fcom.appinmobiliaria.inmobiliariaapp%2Fcache%2Fimage_picker1423340141.jpg?alt=media&token=7d0e0f6c-1b28-4ee6-951a-fa5ece767d64";
@@ -1335,10 +1397,10 @@ const resolvers={
             //let ciudades=["La Paz","Oruro","Potosí","Cochabamba","Tarija","Sucre","Santa Cruz","Trinidad"];
             //let ciudades=["Sucre"];
             let zona=["Zona 3"];
-            let tipo_inmueble=["Casa","Departamento","Terreno"];
-            //let tipo_inmueble=["Casa"];
-            let tipo_contrato=["Venta","Alquiler","Anticrético"];
-            //let tipo_contrato=["Venta",];
+           //let tipo_inmueble=["Casa","Departamento","Terreno"];
+            let tipo_inmueble=["Casa"];
+            //let tipo_contrato=["Venta","Alquiler","Anticrético"];
+            let tipo_contrato=["Venta",];
             let imagenes_2D=["","www.linkimagenes"];
             let video_2D=["","www.linkvideo"];
             let tour_virtual=["","www.linktourvirtual"];

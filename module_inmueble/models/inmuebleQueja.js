@@ -37,6 +37,10 @@ const InmuebleQuejaSchema = new mongoose.Schema({
         type:String,
         default:""
     },
+    solicitud_terminada:{
+        type:Boolean,
+        default:false
+    },
     usuario_respondedor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Usuario'

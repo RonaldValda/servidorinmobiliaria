@@ -11,6 +11,11 @@ extend type Query{
     obtenerMembresiaPagosSuperUsuario(id:ID):[MembresiaPago]
     obtenerAdministradores:[Usuario]
     obtenerUsuariosInmuebleBuscadosCiudad(ciudad:String):[UsuarioInmuebleBuscado]
+    obtenerReportesQuejasInmueble(id_inmueble:ID):ReportesQuejasInmueble
+}
+type ReportesQuejasInmueble{
+    reportes_inmueble:[InmuebleReportado],
+    inmueble_quejas:[InmuebleQueja]
 }
 type NotificacionesSuperUsuario{
     reportar_inmueble:[InmuebleReportado]

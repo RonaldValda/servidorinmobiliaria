@@ -56,6 +56,16 @@ const resolversSuperUsuario={
                 .populate({path:"administrador"});
             return respuesta;
         },
+        obtenerReportesQuejasInmueble:async (_,{id_inmueble})=>{
+            var filter={};
+            filter.inmueble=id_inmueble;
+            filter.respuesta="";
+            var respuesta={};
+            respuesta.reportes_inmueble=await InmuebleReportado.find(filter)
+                                        .populate({path:"usuario_solicitante"});
+            respuesta.inmueble_quejas=await InmuebleQueja.find(filter);
+            return respuesta;
+        },
         obtenerNotificacionesExisteSuperUsuario:async(_,{id})=>{
             var filter={};
             filter.usuario_respondedor=id;

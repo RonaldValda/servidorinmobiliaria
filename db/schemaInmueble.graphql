@@ -426,6 +426,7 @@ type InmuebleReportado{
     respuesta:String
     observaciones_respuesta:String
     respuesta_entregada:Boolean
+    solicitud_terminada:Boolean
 }
 input InmuebleReportadoInput{
     vendido_multiples_lugares:Boolean
@@ -450,6 +451,7 @@ type InmuebleQueja{
     respuesta:String
     observaciones_respuesta:String
     respuesta_entregada:Boolean
+    solicitud_terminada:Boolean
 }
 input InmuebleQuejaInput{
     sin_respuesta:Boolean
@@ -478,6 +480,7 @@ type Mutation {
     responderInmuebleQueja(id_solicitud:ID,input:InmuebleQuejaInput):InmuebleQueja
     guardarInmuebleNota(id_inmueble:ID,id_usuario:ID,nota:String):InmuebleNota
     eliminarInmueblesTodos:String
+    cerrarOperacionesInmueble(id_inmueble:ID,inmueble_imagenes_input:InmuebleImagenesInput):String
     solicitudComprobante(id:ID):String
 }
 type Subscription {
