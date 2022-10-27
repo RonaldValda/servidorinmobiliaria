@@ -1,0 +1,191 @@
+extend type Query {
+    obtenerInmuebles(input1: FiltroInmuebleInput): [Inmueble]
+    obtenerInmueblesAgencia: [Inmueble]
+}
+
+type Inmueble{
+    id: ID
+    nombre_propietario: String
+    ciudad: String
+    zona: String
+    direccion: String
+    precio: Int
+    tipo_inmueble: String
+    superficie_terreno: Int
+    superficie_construccion: Int
+    tipo_contrato: String
+    documentos_dia: Boolean
+    construccion_estrenar: Boolean
+    incluye_credito: Boolean
+    sin_construir: Boolean
+    tiempo_construccion: Int
+    inmueble_compartido: Boolean
+    numero_duenios: Int
+    numero_pisos: Int
+    sin_hipoteca: Boolean
+    url_imagenes: [String]
+    numero_dormitorios: Int
+    numero_banios: Int
+    numero_garaje: Int
+    mascotas_permitidas: Boolean
+    lavanderia: Boolean
+    zona_lavadora: Boolean
+    churrasquero: Boolean
+    azotea: Boolean
+    cancha: Boolean
+    piscina: Boolean
+    sauna: Boolean
+    tienda: Boolean
+    estudio: Boolean
+    jardin: Boolean
+    balcon: Boolean
+    ascensor: Boolean
+    sotano: Boolean
+    deposito: Boolean
+    iglesia: Boolean
+    parque: Boolean
+    deportiva: Boolean
+    policial: Boolean
+    residencial: Boolean
+    estudiantil: Boolean
+    comercial: Boolean
+    verificados: Boolean
+    bienes_adjudicados: Boolean
+    remates_judiciales: Boolean
+    imagenes_2D_link: String
+    video_2D_link: String
+    tour_virtual_360_link: String
+    video_tour_360_link: String
+    agencia:Agencia
+    usuarios_favorito: [UsuarioFavorito]
+}
+
+input InmuebleInput{
+    nombre_propietario: String
+    ciudad: String
+    zona: String
+    direccion: String
+    precio: Int
+    tipo_inmueble: String
+    superficie_terreno: Int
+    superficie_construccion: Int
+    tipo_contrato: String
+    documentos_dia: Boolean
+    construccion_estrenar: Boolean
+    incluye_credito: Boolean
+    sin_construir: Boolean
+    tiempo_construccion: Int
+    inmueble_compartido: Boolean
+    numero_duenios: Int
+    numero_pisos: Int
+    sin_hipoteca: Boolean
+    url_imagenes: [String]
+    numero_dormitorios: Int
+    numero_banios: Int
+    numero_garaje: Int
+    mascotas_permitidas: Boolean
+    lavanderia: Boolean
+    zona_lavadora: Boolean
+    churrasquero: Boolean
+    azotea: Boolean
+    cancha: Boolean
+    piscina: Boolean
+    sauna: Boolean
+    tienda: Boolean
+    estudio: Boolean
+    jardin: Boolean
+    balcon: Boolean
+    ascensor: Boolean
+    sotano: Boolean
+    deposito: Boolean
+    iglesia: Boolean
+    parque: Boolean
+    deportiva: Boolean
+    policial: Boolean
+    residencial: Boolean
+    estudiantil: Boolean
+    comercial: Boolean
+    verificados: Boolean
+    bienes_adjudicados: Boolean
+    remates_judiciales: Boolean
+    imagenes_2D_link: String
+    video_2D_link: String
+    tour_virtual_360_link: String
+    video_tour_360_link: String
+    
+}
+
+type InmuebleFavorito{
+    id: ID
+    favorito: Boolean
+    visto: Boolean
+    doble_visto: Boolean
+    Inmueble: String
+}
+input InmuebleFavoritoInput{
+    favorito: Boolean
+    visto: Boolean
+    doble_visto: Boolean
+}
+
+
+input FiltroInmuebleInput{
+    tipo_inmueble: String
+    tipo_contrato: String
+    precio_min: Int
+    precio_max: Int
+    sup_terreno_min: Int
+    sup_terreno_max: Int
+    sup_construccion_min: Int
+    sup_construccion_max: Int
+    documentos_dia: Boolean
+    construccion_estrenar: Boolean
+    incluye_credito: Boolean
+    sin_construir: Boolean
+    tiempo_construccion_min: Int
+    tiempo_construccion_max: Int
+    inmueble_compartido: Boolean
+    numero_duenios: Int
+    numero_pisos: Int
+    sin_hipoteca: Boolean
+    numero_dormitorios: Int
+    numero_banios: Int
+    numero_garaje: Int
+    mascotas_permitidas: Boolean
+    lavanderia: Boolean
+    zona_lavadora: Boolean
+    churrasquero: Boolean
+    azotea: Boolean
+    cancha: Boolean
+    piscina: Boolean
+    sauna: Boolean
+    tienda: Boolean
+    estudio: Boolean
+    jardin: Boolean
+    balcon: Boolean
+    ascensor: Boolean
+    sotano: Boolean
+    deposito: Boolean
+    iglesia: Boolean
+    parque: Boolean
+    deportiva: Boolean
+    policial: Boolean
+    residencial: Boolean
+    estudiantil: Boolean
+    comercial: Boolean
+    verificados: Boolean
+    bienes_adjudicados: Boolean
+    remates_judiciales: Boolean
+    imagenes_2D: Boolean
+    video_2D: Boolean
+    tour_virtual: Boolean
+    video_tour: Boolean
+    id_usuario: String
+}
+extend type Mutation {
+    registrarInmueble(id: ID!, input: InmuebleInput) : String
+    actualizarInmueble(id: ID!, input: InmuebleInput) : String
+    eliminarInmueble(id: ID!) : String
+    registrarInmuebleMasivo(id: ID!): String
+    registrarInmuebleFavorito(id_inmueble: ID, id_usuario: ID, input: InmuebleFavoritoInput): String
+}

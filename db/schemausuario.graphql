@@ -1,0 +1,56 @@
+    
+    extend type Query {
+        obtenerUsuarios: [Usuario]
+        
+        obtenerUsuariosID(input: UsuarioIDInput) : [Usuario] 
+        obtenerUsuarioFavorito(id:ID) : [UsuarioFavorito]
+    }
+
+    input UsuarioIDInput {
+        nombre: String
+    }
+
+    type Usuario {
+        id: ID
+        nombre: String
+        nombre_usuario: String
+        email: String
+        medio_registro: String
+    }
+
+    type Token {
+        token: String
+    }
+
+    input UsuarioInput {
+        nombre: String!
+        nombre_usuario: String
+        email: String!
+        password: String!
+        medio_registro: String
+    }
+
+    input AutenticarInput {
+        email: String!
+        password: String!
+    }
+    type UsuarioFavorito{
+        id: ID
+        visto: Boolean
+        doble_visto: Boolean
+        favorito: Boolean
+        usuario: Usuario
+        inmueble: Inmueble
+    }
+    input UsuarioFavoritoInput{
+        visto: Boolean
+        doble_visto: Boolean
+        favorito: Boolean
+    }
+
+    extend type Mutation {
+        crearUsuario(input: UsuarioInput) : String
+        autenticarUsuario(input: AutenticarInput) : Usuario
+        #registrarInmuebleFavorito(id_inmueble:ID, id_usuario:ID, input: UsuarioFavoritoInput) : String
+
+    }
